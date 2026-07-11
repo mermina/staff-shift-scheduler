@@ -4,7 +4,7 @@ A self-contained, data-driven staff **shift scheduler** for care homes, hospital
 
 Everything runs in a single HTML file. No installation, no server, no accounts, no dependencies — just open it in a browser.
 
-**🌐 Live demo:** _<add your GitHub Pages link here>_
+**🌐 Live demo:** [https://github.com/mermina/staff-shift-scheduler](https://mermina.github.io/staff-shift-scheduler/)
 
 > The live demo uses **fictional names and data** for illustration only.
 
