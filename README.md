@@ -1,13 +1,13 @@
 # Staff Shift Scheduler
 
+**▶ Live demos:** [both demos](https://mermina.github.io/staff-shift-scheduler/) · [café & restaurant](https://mermina.github.io/staff-shift-scheduler/hospitality/) · [care home](https://mermina.github.io/staff-shift-scheduler/care-home/)
+
 Rota generators that run in the browser. You describe your staff, the cover you need and your rules, and the tool builds a month of shifts, checks it against the rules and shows each person's hours balance. Each demo is a single self-contained HTML file: no install, no server, no account.
 
-**Live demos:** open `index.html`, or the GitHub Pages site for this repository.
-
-| Demo | For | Folder |
+| Demo | For | Links |
 |---|---|---|
-| **Café & restaurant** (Bistró Dæmi) | cafés, restaurants, bars, 8–25 staff | [`hospitality/`](hospitality/) |
-| **Care home** (24/7) | care homes, residential units, any 24/7 shift work | [`care-home/`](care-home/) |
+| **Café & restaurant** (Bistró Dæmi) | cafés, restaurants, bars, 8–25 staff | [open demo](https://mermina.github.io/staff-shift-scheduler/hospitality/) · [code](hospitality/) |
+| **Care home** (24/7) | care homes, residential units, any 24/7 shift work | [open demo](https://mermina.github.io/staff-shift-scheduler/care-home/) · [code](care-home/) |
 
 ![Café-restaurant demo](docs/screenshots/hospitality.png)
 
