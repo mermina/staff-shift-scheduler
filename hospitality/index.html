@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospitality Rota — DEMO</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--ink:#1d1c1a;--mut:#5f5d58;--faint:#8e8b84;--line:#e4e1d9;--acc:#2f6b5a;--accbg:#e4f0ec;
+  --open:#fff1c9;--mid:#dff0d8;--close:#e5ddf3;--bad:#b3261e;--badbg:#fbe9e7;--warn:#8a5a00;--warnbg:#fdf3dc;--okc:#1e6b4a;--okbg:#e3f3ea}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;padding:16px}
+.wrap{max-width:1180px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.badge{display:inline-block;font-size:11px;font-weight:600;background:var(--warnbg);color:var(--warn);border-radius:20px;padding:2px 9px;margin-left:6px;vertical-align:middle}
+.sub{font-size:12px;color:var(--faint)}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500;padding:7px 12px}
+.btn.small{padding:5px 10px;font-size:12.5px}
+.btn.danger{color:var(--bad)}
+.btn:hover{filter:brightness(.95)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff}
+.lang button{border:0;background:none;padding:4px 11px;font:inherit;font-size:12px;font-weight:600;color:var(--mut);cursor:pointer}
+.lang button.on{background:var(--acc);color:#fff}
+.demo{background:var(--warnbg);border:1px solid #ecd9a8;color:#5d4300;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
+.demo a{color:inherit;font-weight:600}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:9px 13px;font:inherit;font-size:13.5px;color:var(--mut);background:none;border:0;border-bottom:2px solid transparent;cursor:pointer;font-weight:500}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.card h3{font-size:14px;font-weight:650;margin-bottom:3px}
+.hint{font-size:12.5px;color:var(--faint);margin-bottom:10px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+input,select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:6px;padding:5px 7px;background:#fff;color:var(--ink)}
+input[type=number]{width:74px}
+input.nm{width:120px}
+input:disabled{background:#f3f2ee;color:var(--faint)}
+input[type=checkbox]{accent-color:var(--acc);width:15px;height:15px;vertical-align:middle}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;color:var(--faint);font-weight:500;font-size:12px;padding:5px 6px;white-space:nowrap}
+td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:middle}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat .l{font-size:12px;color:var(--faint)}.stat .v{font-size:20px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.stat .s{font-size:11.5px;color:var(--faint)}
+.checks{list-style:none;display:flex;flex-direction:column;gap:5px}
+.checks li{border-radius:7px;padding:6px 10px;font-size:13px}
+.checks li.bad{background:var(--badbg);color:var(--bad)}
+.checks li.warn{background:var(--warnbg);color:var(--warn)}
+.checks li.ok{background:var(--okbg);color:var(--okc)}
+.grid table{min-width:820px;table-layout:fixed}
+.grid th,.grid td{border:1px solid var(--line);text-align:center;padding:3px 2px}
+.grid th.nm,.grid td.nm{text-align:left;width:118px;padding-left:8px;background:#fff;position:sticky;left:0;z-index:1}
+.grid th.we{background:#f3f1ea}
+.grid th.out,.grid td.out{background:repeating-linear-gradient(135deg,#f6f5f1,#f6f5f1 5px,#efeee9 5px,#efeee9 10px);color:#a9a69d;font-size:12px}
+.grid td select{width:100%;border:0;background:transparent;font-size:12.5px;padding:4px 0;text-align:center;text-align-last:center;cursor:pointer;-webkit-appearance:none;appearance:none;font-variant-numeric:tabular-nums}
+.grid td.c-open{background:var(--open)}.grid td.c-mid{background:var(--mid)}.grid td.c-close{background:var(--close)}
+.grid td.ro{font-size:12.5px;font-variant-numeric:tabular-nums}
+.grid td.flag{outline:2px solid var(--bad);outline-offset:-2px}
+.grid tr.grp td{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;background:#fbfaf7}
+.grid tr.cov td{font-size:11.5px;color:var(--mut);background:#fbfaf7}
+.grid tr.cov td.short{color:var(--bad);font-weight:700;background:var(--badbg)}
+.grid .wk{font-size:13px;font-weight:650;margin:14px 0 6px}
+.key{display:inline-block;font-size:10px;background:var(--accbg);color:var(--acc);border-radius:4px;padding:0 4px;margin-left:4px;font-weight:700}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.days{display:inline-flex;gap:2px}
+.days label{display:flex;flex-direction:column;align-items:center;font-size:10px;color:var(--faint)}
+.neg{color:var(--bad)}.pos{color:var(--okc)}
+.rm{border:0;background:none;color:var(--bad);font-size:17px;cursor:pointer;line-height:1}
+.note{font-size:12.5px;color:var(--warn);background:var(--warnbg);border-radius:7px;padding:6px 10px;margin-bottom:10px;display:none}
+.mine{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.mine div{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:15px;background:#fff}
+.mine div b{font-weight:650}
+.right{text-align:right;font-variant-numeric:tabular-nums}
+.arch{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff}
+.arch.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.arch .t{font-weight:650;font-size:14.5px;min-width:140px}
+.arch .m{font-size:12.5px;color:var(--mut);flex:1}
+.closebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.modal{position:fixed;inset:0;background:rgba(20,20,18,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:18px 20px;max-height:86vh;overflow:auto}
+.modal h2{font-size:16px;margin-bottom:8px}
+.modal ul{margin:6px 0 10px 18px;font-size:13.5px}
+.modal li{margin:3px 0}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+footer{font-size:11.5px;color:var(--faint);margin-top:18px}
+@media (max-width:640px){body{padding:10px}h1{font-size:17px}.stat .v{font-size:17px}.tab{padding:8px 9px}}
+@media print{body{background:#fff;padding:0}.noprint,.tabs,.demo,header .lang,.modal,#p-rota .card:not(.printme){display:none!important}.panel{display:none!important}#p-rota{display:block!important}.grid table{min-width:0;font-size:10px}.grid td select{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1><span id="bizName">Bistró Dæmi</span> — <span data-t="rota">rota</span><span class="badge" data-t="DEMO · fictional café-restaurant">DEMO · fictional café-restaurant</span></h1>
+    <div class="sub" data-t="Builds a monthly rota for a café, restaurant or bar from your staff, shifts and rules — shows hours and wage cost, and carries hour balances from month to month.">Builds a monthly rota for a café, restaurant or bar from your staff, shifts and rules — shows hours and wage cost, and carries hour balances from month to month.</div>
+  </div>
+  <div class="row noprint" style="align-items:center">
+    <div class="lang"><button data-l="en" class="on">EN</button><button data-l="is">IS</button></div>
+    <button class="btn" id="genBtn" data-t="▶ Generate rota">▶ Generate rota</button>
+  </div>
+</header>
+<div class="demo noprint"><b data-t="Demo:">Demo:</b> <span data-t="a made-up café-restaurant with made-up staff. Pay rates are example numbers, not a wage agreement. Changes are kept in this browser only.">a made-up café-restaurant with made-up staff. Pay rates are example numbers, not a wage agreement. Changes are kept in this browser only.</span> <a href="#" id="resetBtn" data-t="Reset demo">Reset demo</a></div>
+
+<nav class="tabs noprint" id="tabs">
+  <button class="tab on" data-p="rota" data-t="Rota">Rota</button>
+  <button class="tab" data-p="staff" data-t="Staff">Staff</button>
+  <button class="tab" data-p="shifts" data-t="Shifts & cover">Shifts &amp; cover</button>
+  <button class="tab" data-p="rules" data-t="Rules & pay">Rules &amp; pay</button>
+  <button class="tab" data-p="mine" data-t="My shifts">My shifts</button>
+  <button class="tab" data-p="arch" data-t="Archive">Archive</button>
+</nav>
+
+<!-- ROTA -->
+<section class="panel on" id="p-rota">
+  <div class="note" id="staleNote" data-t="Settings changed since this rota was generated. Press Generate to rebuild it (your manual changes will be replaced).">Settings changed since this rota was generated. Press Generate to rebuild it (your manual changes will be replaced).</div>
+  <div class="card noprint">
+    <div class="row">
+      <label class="f"><span data-t="Month">Month</span><span class="row" style="gap:6px"><select id="pMonth"></select><select id="pYear"></select></span></label>
+      <div class="sub" id="pEcho" style="padding-bottom:7px"></div>
+      <div style="margin-left:auto" class="row">
+        <button class="btn sec" id="csvBtn" data-t="Download for Excel">Download for Excel</button>
+        <button class="btn sec" id="printBtn" data-t="Print">Print</button>
+      </div>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="card noprint"><h3 data-t="Checks">Checks</h3><ul class="checks" id="checks"></ul></div>
+  <div class="card printme"><div class="grid scroll" id="grid"></div>
+    <div class="legend" id="legend"></div>
+    <div class="hint noprint" style="margin-top:8px" data-t="Click any cell to change or remove a shift. Checks, hours and cost update straight away. The row under each week compares the people booked with the people needed (floor / kitchen). Striped days belong to another month; last month’s shifts are shown in grey so the rest and days-in-a-row rules can be checked across the change of month.">Click any cell to change or remove a shift. Checks, hours and cost update straight away. The row under each week compares the people booked with the people needed (floor / kitchen). Striped days belong to another month; last month’s shifts are shown in grey so the rest and days-in-a-row rules can be checked across the change of month.</div>
+    <div class="closebar noprint">
+      <span class="sub" data-t="When the month is finished: file it in the Archive and carry each balance into next month.">When the month is finished: file it in the Archive and carry each balance into next month.</span>
+      <button class="btn" id="closeBtn"></button>
+    </div>
+  </div>
+  <div class="card noprint"><h3 data-t="Hours, balance & wage cost">Hours, balance &amp; wage cost</h3>
+    <div class="hint" data-t="Contract = weekly contract hours × days in the month ÷ 7. Balance applies to people with “carry balance” ticked: opening balance + booked − contract. Hourly staff are paid for hours worked, so they carry nothing.">Contract = weekly contract hours × days in the month ÷ 7. Balance applies to people with “carry balance” ticked: opening balance + booked − contract. Hourly staff are paid for hours worked, so they carry nothing.</div>
+    <div class="scroll" id="hoursTbl"></div></div>
+</section>
+
+<!-- STAFF -->
+<section class="panel" id="p-staff">
+  <div class="card"><h3 data-t="Staff">Staff</h3>
+    <div class="hint" data-t="Key = key-holder (can open or close). Days = days the person can work. Shifts = shift types the person can take. Carry = hours over or under contract roll into next month (for salaried or fixed-contract staff). Balance = hours carried in: + means worked extra, − means owes hours.">Key = key-holder (can open or close). Days = days the person can work. Shifts = shift types the person can take. Carry = hours over or under contract roll into next month (for salaried or fixed-contract staff). Balance = hours carried in: + means worked extra, − means owes hours.</div>
+    <div class="scroll" id="staffTbl"></div>
+    <button class="btn sec" id="addStaff" style="margin-top:10px" data-t="+ Add person">+ Add person</button>
+  </div>
+</section>
+
+<!-- SHIFTS -->
+<section class="panel" id="p-shifts">
+  <div class="card"><h3 data-t="Shift types">Shift types</h3>
+    <div class="hint" data-t="Tick “key-holder” if someone with keys must be on that shift.">Tick “key-holder” if someone with keys must be on that shift.</div>
+    <div class="scroll" id="shiftTbl"></div></div>
+  <div class="card"><h3 data-t="People needed">People needed</h3>
+    <div class="hint" data-t="How many people each shift needs, per day and per area.">How many people each shift needs, per day and per area.</div>
+    <div class="scroll" id="covTbl"></div></div>
+</section>
+
+<!-- RULES -->
+<section class="panel" id="p-rules">
+  <div class="card"><h3 data-t="Scheduling rules">Scheduling rules</h3>
+    <div class="hint" data-t="The generator never breaks these — including across the change of month. If it can’t fill a shift without breaking one, it leaves the gap and tells you.">The generator never breaks these — including across the change of month. If it can’t fill a shift without breaking one, it leaves the gap and tells you.</div>
+    <div class="row" id="rulesBox"></div></div>
+  <div class="card"><h3 data-t="Pay (example numbers)">Pay (example numbers)</h3>
+    <div class="hint" data-t="Set these from your own wage agreement. Demo rates are placeholders, roughly in line with the 2026 Efling–SA hotel & restaurant table (base about 2,780–2,980 kr/h; under-18s get a lower percentage). On-costs = payroll tax, employer pension and holiday pay — ask your accountant for your figure.">Set these from your own wage agreement. Demo rates are placeholders, roughly in line with the 2026 Efling–SA hotel &amp; restaurant table (base about 2,780–2,980 kr/h; under-18s get a lower percentage). On-costs = payroll tax, employer pension and holiday pay — ask your accountant for your figure.</div>
+    <div class="row" id="payBox"></div></div>
+  <div class="card"><h3 data-t="Hour weights (vægi)">Hour weights (vægi)</h3>
+    <div class="hint" data-t="Some shift agreements count evening, weekend or holiday hours as more than one hour toward the contract. 1.00 = off. Weights change the hours owed and the carried balance, not the pay (pay extras are set above). If several apply, the highest counts.">Some shift agreements count evening, weekend or holiday hours as more than one hour toward the contract. 1.00 = off. Weights change the hours owed and the carried balance, not the pay (pay extras are set above). If several apply, the highest counts.</div>
+    <div class="row" id="wtBox"></div></div>
+</section>
+
+<!-- MY SHIFTS -->
+<section class="panel" id="p-mine">
+  <div class="card"><h3 data-t="My shifts">My shifts</h3>
+    <div class="hint" data-t="What a staff member sees on their phone. Pick a name, then copy the list into a message.">What a staff member sees on their phone. Pick a name, then copy the list into a message.</div>
+    <div class="row"><select id="mineWho"></select><button class="btn sec" id="copyMine" data-t="Copy as text">Copy as text</button><span class="sub" id="copyMsg"></span></div>
+    <div class="mine" id="mineList"></div></div>
+</section>
+
+<!-- ARCHIVE -->
+<section class="panel" id="p-arch">
+  <div class="card"><div class="row" style="justify-content:space-between;align-items:center">
+      <div><h3 data-t="Archive">Archive</h3>
+      <div class="hint" style="margin:0" data-t="Every closed month, frozen as it was: rota, staff, pay rates, hours and balances. Later changes to staff or pay never alter an archived month.">Every closed month, frozen as it was: rota, staff, pay rates, hours and balances. Later changes to staff or pay never alter an archived month.</div></div>
+      <button class="btn sec small" id="undoBtn" data-t="↺ Undo last close or removal">↺ Undo last close or removal</button></div>
+    <div id="archList" style="margin-top:12px"></div></div>
+  <div class="card" id="archView" style="display:none"></div>
+</section>
+
+<footer data-t="Built with AI assistance as a demo. Fictional business, staff and pay figures.">Built with AI assistance as a demo. Fictional business, staff and pay figures.</footer>
+</div>
+
+<div class="modal" id="modal"><div class="box"><h2 id="mTitle"></h2><div id="mBody"></div>
+  <div class="acts"><button class="btn sec" id="mCancel" data-t="Cancel">Cancel</button><button class="btn" id="mOk"></button></div></div></div>
+
+<script>
+/* ============ i18n ============ */
+const IS={"rota":"vaktaplan","DEMO · fictional café-restaurant":"SÝNIDÆMI · skáldað kaffihús og veitingastaður",
+"Builds a monthly rota for a café, restaurant or bar from your staff, shifts and rules — shows hours and wage cost, and carries hour balances from month to month.":"Býr til mánaðarlegt vaktaplan fyrir kaffihús, veitingastað eða bar út frá starfsfólki, vöktum og reglum — sýnir tíma og launakostnað og flytur tímastöðu milli mánaða.",
+"▶ Generate rota":"▶ Búa til vaktaplan","Demo:":"Sýnidæmi:",
+"a made-up café-restaurant with made-up staff. Pay rates are example numbers, not a wage agreement. Changes are kept in this browser only.":"skáldaður veitingastaður og skáldað starfsfólk. Launatölur eru dæmi, ekki kjarasamningur. Breytingar vistast aðeins í þessum vafra.",
+"Reset demo":"Endurstilla","Rota":"Vaktaplan","Staff":"Starfsfólk","Shifts & cover":"Vaktir og mönnun","Rules & pay":"Reglur og laun","My shifts":"Mínar vaktir","Archive":"Skjalasafn",
+"Settings changed since this rota was generated. Press Generate to rebuild it (your manual changes will be replaced).":"Stillingum var breytt eftir að planið var búið til. Ýttu á „Búa til“ til að endurgera það (handvirkar breytingar hverfa).",
+"Month":"Mánuður","Download for Excel":"Sækja fyrir Excel","Print":"Prenta","Checks":"Athuganir",
+"Click any cell to change or remove a shift. Checks, hours and cost update straight away. The row under each week compares the people booked with the people needed (floor / kitchen). Striped days belong to another month; last month’s shifts are shown in grey so the rest and days-in-a-row rules can be checked across the change of month.":"Smelltu á reit til að breyta eða fjarlægja vakt. Athuganir, tímar og kostnaður uppfærast strax. Línan undir hverri viku ber saman bókað fólk og þörf (salur / eldhús). Röndóttir dagar tilheyra öðrum mánuði; vaktir síðasta mánaðar sjást gráar svo hægt sé að athuga hvíld og daga í röð yfir mánaðamót.",
+"When the month is finished: file it in the Archive and carry each balance into next month.":"Þegar mánuðurinn er búinn: settu hann í skjalasafnið og færðu stöðu hvers og eins yfir á næsta mánuð.",
+"Hours, balance & wage cost":"Tímar, staða og launakostnaður",
+"Contract = weekly contract hours × days in the month ÷ 7. Balance applies to people with “carry balance” ticked: opening balance + booked − contract. Hourly staff are paid for hours worked, so they carry nothing.":"Samningur = vikulegir samningstímar × dagar í mánuði ÷ 7. Staða á við þá sem hafa „flytja stöðu“ hakað: upphafsstaða + bókað − samningur. Tímavinnufólk fær greitt fyrir unna tíma og flytur ekkert.",
+"Key = key-holder (can open or close). Days = days the person can work. Shifts = shift types the person can take. Carry = hours over or under contract roll into next month (for salaried or fixed-contract staff). Balance = hours carried in: + means worked extra, − means owes hours.":"Lykill = lyklahafi (má opna eða loka). Dagar = dagar sem viðkomandi getur unnið. Vaktir = vaktategundir sem viðkomandi tekur. Flytja = tímar yfir eða undir samningi færast á næsta mánuð (fyrir fastráðna). Staða = tímar sem fluttust inn: + unnið umfram, − skuldar tíma.",
+"+ Add person":"+ Bæta við","Shift types":"Vaktategundir","Tick “key-holder” if someone with keys must be on that shift.":"Hakaðu við „lyklahafi“ ef einhver með lykla þarf að vera á vaktinni.",
+"People needed":"Mönnunarþörf","How many people each shift needs, per day and per area.":"Hve marga hver vakt þarf, eftir degi og svæði.",
+"Scheduling rules":"Reglur","The generator never breaks these — including across the change of month. If it can’t fill a shift without breaking one, it leaves the gap and tells you.":"Planið brýtur aldrei þessar reglur — heldur ekki yfir mánaðamót. Ef ekki er hægt að manna vakt án þess, er gatið skilið eftir og þér sagt frá því.",
+"Pay (example numbers)":"Laun (dæmatölur)","Set these from your own wage agreement. The demo values are placeholders for illustration only.":"Settu inn tölur úr þínum kjarasamningi. Tölurnar hér eru aðeins til sýnis.",
+"What a staff member sees on their phone. Pick a name, then copy the list into a message.":"Það sem starfsmaður sér í símanum. Veldu nafn og afritaðu listann í skilaboð.",
+"Copy as text":"Afrita sem texta","Built with AI assistance as a demo. Fictional business, staff and pay figures.":"Unnið með aðstoð gervigreindar sem sýnidæmi. Skáldað fyrirtæki, starfsfólk og launatölur.",
+"Every closed month, frozen as it was: rota, staff, pay rates, hours and balances. Later changes to staff or pay never alter an archived month.":"Allir lokaðir mánuðir, óbreyttir: vaktaplan, starfsfólk, launataxtar, tímar og staða. Síðari breytingar hafa engin áhrif á mánuð í skjalasafni.",
+"↺ Undo last close or removal":"↺ Afturkalla síðustu lokun eða eyðingu","Cancel":"Hætta við",
+"Name":"Nafn","Area":"Svæði","Key":"Lykill","Contract h/wk":"Samn. klst/viku","Max h/wk":"Hámark klst/viku","Rate/h":"Tímakaup","Days":"Dagar","Shifts":"Vaktir","Carry":"Flytja","Balance h":"Staða klst",
+"floor":"salur","kitchen":"eldhús","Floor":"Salur","Kitchen":"Eldhús","Start":"Byrjar","End":"Endar","key-holder":"lyklahafi","Hours":"Tímar",
+"Minimum rest between shifts (h)":"Lágmarkshvíld milli vakta (klst)","Max days in a row":"Hámark daga í röð","Keep within each person’s max hours":"Innan hámarkstíma hvers og eins",
+"Currency":"Gjaldmiðill","Evening starts at":"Kvöld byrjar kl.","Evening extra %":"Kvöldálag %","Weekend extra %":"Helgarálag %","Public holiday extra %":"Stórhátíðarálag %",
+"Public holidays (YYYY-MM-DD, comma-separated)":"Frídagar (ÁÁÁÁ-MM-DD, aðgreint með kommu)","Expected sales per month":"Áætluð sala á mánuði",
+"Staff hours":"Vinnutímar","Wage cost":"Launakostnaður","Labour cost % of sales":"Launahlutfall af sölu","Open gaps":"Ómannaðar vaktir",
+"All good — every shift is covered and no rule is broken.":"Allt í lagi — allar vaktir mannaðar og engin regla brotin.",
+"short":"vantar","no key-holder on":"enginn lyklahafi á","rest only":"hvíld aðeins","days in a row":"dagar í röð","over max hours in week of":"yfir hámarki í viku frá",
+"not available on":"ekki laus á","can’t work":"tekur ekki","under contract by":"undir samningi um","h this month":"klst í mánuðinum","balance at month end":"staða í lok mánaðar",
+"Contract":"Samningur","Booked":"Bókað","This month":"Mánuðurinn","Opening":"Upphafsstaða","Closing":"Lokastaða","Cost":"Kostnaður","Total":"Samtals","Week of":"Vika frá","hourly":"tímavinna",
+"No shifts in this period.":"Engar vaktir á tímabilinu.","Copied.":"Afritað.","Copy failed — select the text and copy it by hand.":"Afritun tókst ekki — veldu textann og afritaðu handvirkt.",
+"Rota generated.":"Vaktaplan búið til.","Reset the demo to its starting data?":"Endurstilla sýnidæmið?","New person":"Nýr starfsmaður","Remove":"Fjarlægja",
+"Open":"Opnun","Mid":"Miðja","Close":"Lokun",
+"Close {m} & start next ▸":"Loka {m} og hefja næsta ▸","Close {m}?":"Loka {m}?","Close month":"Loka mánuði",
+"The rota, staff list, pay rates, hours and cost are filed in the Archive exactly as they are now.":"Vaktaplanið, starfsmannalistinn, taxtar, tímar og kostnaður fara í skjalasafnið eins og þau eru núna.",
+"Balances carried into {m}:":"Staða sem flyst yfir á {m}:","No one has “carry balance” ticked, so no balances move.":"Enginn er með „flytja stöðu“ hakað, svo engin staða færist.",
+"Then {m} opens and a new rota is generated. Undo is available in the Archive tab.":"Síðan opnast {m} og nýtt vaktaplan er búið til. Hægt er að afturkalla í skjalasafninu.",
+"This month still has {n} problem(s) in Checks. You can still close it.":"Enn eru {n} athugasemdir í Athugunum. Þú getur samt lokað.",
+"{m} filed. {n} generated.":"{m} sett í skjalasafn. {n} búinn til.",
+"View":"Skoða","Hide":"Fela","closed":"lokað","Remove {m} from the Archive?":"Fjarlægja {m} úr skjalasafni?",
+"Balances already carried forward are not changed. Undo is available straight after.":"Staða sem þegar hefur verið flutt breytist ekki. Hægt er að afturkalla strax á eftir.",
+"Nothing archived yet. Close a month on the Rota tab to file it here.":"Ekkert í skjalasafni enn. Lokaðu mánuði á vaktaplansflipanum til að setja hann hér.",
+"Undone.":"Afturkallað.","Wage cost incl. on-costs":"Launakostnaður með launatengdum gjöldum","gross":"brúttó","Employer on-costs %":"Launatengd gjöld %","Weighted":"Vegið","Hours × weights (vægi)":"Tímar × vægi",
+"Hour weights (vægi)":"Vægi tíma","Evening weight":"Vægi kvölds","Weekend weight":"Vægi helga","Public holiday weight":"Vægi frídaga","Example: 1.05 means 10 evening hours count as 10.5.":"Dæmi: 1,05 þýðir að 10 kvöldtímar teljast 10,5.",
+"Some shift agreements count evening, weekend or holiday hours as more than one hour toward the contract. 1.00 = off. Weights change the hours owed and the carried balance, not the pay (pay extras are set above). If several apply, the highest counts.":"Sumir vaktasamningar telja kvöld-, helgar- eða frídagatíma sem meira en eina klst. upp í samning. 1,00 = óvirkt. Vægi breytir tímaskuld og stöðu, ekki launum (álag er stillt að ofan). Ef fleiri en eitt á við gildir hæsta.",
+"Set these from your own wage agreement. Demo rates are placeholders, roughly in line with the 2026 Efling–SA hotel & restaurant table (base about 2,780–2,980 kr/h; under-18s get a lower percentage). On-costs = payroll tax, employer pension and holiday pay — ask your accountant for your figure.":"Settu inn tölur úr þínum kjarasamningi. Taxtar hér eru dæmi, nokkurn veginn í takt við launatöflu Eflingar og SA fyrir hótel og veitingahús 2026 (grunnur um 2.780–2.980 kr/klst; yngri en 18 ára fá lægra hlutfall). Launatengd gjöld = tryggingagjald, mótframlag í lífeyrissjóð og orlof — spurðu bókarann þinn.","hours":"tímar","labour":"launahlutfall"};
+const DN={en:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],is:["mán","þri","mið","fim","fös","lau","sun"]};
+const MN={en:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],is:["jan","feb","mar","apr","maí","jún","júl","ágú","sep","okt","nóv","des"]};
+const ML={en:["January","February","March","April","May","June","July","August","September","October","November","December"],is:["janúar","febrúar","mars","apríl","maí","júní","júlí","ágúst","september","október","nóvember","desember"]};
+let L='en';
+const t=(k,v)=>{let s=(L==='is'&&IS[k]!==undefined)?IS[k]:k;if(v)Object.keys(v).forEach(x=>{s=s.split('{'+x+'}').join(v[x]);});return s;};
+function applyLang(){document.documentElement.lang=L;document.querySelectorAll('[data-t]').forEach(e=>{e.textContent=t(e.dataset.t);});
+  document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===L));}
+
+/* ============ dates (month always spelled out, never digits-only) ============ */
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c||1);};
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const dow=d=>(d.getDay()+6)%7; // Mon=0
+const fmt=d=>L==='is'?`${DN.is[dow(d)]} ${d.getDate()}. ${MN.is[d.getMonth()]}`:`${DN.en[dow(d)]} ${d.getDate()} ${MN.en[d.getMonth()]}`;
+const fmtY=d=>fmt(d)+' '+d.getFullYear();
+const monthName=ym=>{const d=parse(ym+'-01');return ML[L][d.getMonth()]+' '+d.getFullYear();};
+const nextMonth=ym=>{const d=parse(ym+'-01');d.setMonth(d.getMonth()+1);return iso(d).slice(0,7);};
+function daysOf(ym){const d=parse(ym+'-01'),out=[];while(iso(d).slice(0,7)===ym){out.push(new Date(d));d.setDate(d.getDate()+1);}return out;}
+const days=()=>daysOf(S.period.month);
+const wIdx=(D,i)=>Math.floor((i+dow(D[0]))/7);
+// shift shown as its hours, compact: 07:30–15:00 → 7:30–15
+const hc=hm=>hm.replace(/^0(\d)/,'$1').replace(/:00$/,'');
+const tm=s=>hc(s.s)+'–'+hc(s.e);
+
+/* ============ demo data (fictional) ============ */
+const TAIL=6; // days of the previous month remembered for the rest / days-in-a-row rules
+function demoData(){
+  const A=[1,1,1,1,1,1,1];
+  const P=(n,role,key,con,max,rate,days,allow,carry,bal)=>({id:'p'+Math.random().toString(36).slice(2,8),n,role,key,con,max,rate,days:days||A.slice(),allow:allow||{open:true,mid:true,close:true},carry:!!carry,bal:bal||0});
+  return {v:3,lang:'en',biz:'Bistró Dæmi',
+    staff:[
+      P('Sóley','floor',true,38,45,3600,[1,1,1,1,1,1,0],{open:true,mid:true,close:false},true,6),
+      P('Ari','floor',true,38,45,3500,[0,1,1,1,1,1,1],null,true,-4),
+      P('Nadia','floor',true,32,40,3300,null,null,true,-8),
+      P('Mia','floor',false,28,36,2950),
+      P('Jonas','floor',false,24,32,2900),
+      P('Freya','floor',false,20,28,2850,[1,1,1,0,1,1,1]),
+      P('Elín','floor',false,16,20,2500,[0,0,0,0,1,1,1]),
+      P('Kristófer','floor',false,12,16,2350,[0,0,0,0,0,1,1]),
+      P('Tomek','kitchen',true,38,45,3500,null,null,true,2),
+      P('Lára','kitchen',false,32,40,3100,null,null,true,0),
+      P('Sigrún','kitchen',false,30,36,2950,[1,1,1,1,0,1,1]),
+      P('Bao','kitchen',false,24,32,2900,null,{open:false,mid:true,close:true}),
+      P('Egill','kitchen',false,16,20,2850,[0,0,0,0,1,1,1]),
+      P('Hekla','kitchen',false,16,24,2850,[0,0,0,1,1,1,1])
+    ],
+    shifts:[
+      {id:'open',n:'Open',s:'07:30',e:'15:30',key:true,cls:'c-open'},
+      {id:'mid',n:'Mid',s:'11:00',e:'16:00',key:false,cls:'c-mid'},
+      {id:'close',n:'Close',s:'15:00',e:'23:00',key:true,cls:'c-close'}],
+    cov:{floor:{open:[2,2,2,2,2,2,2],mid:[0,0,0,0,1,1,1],close:[1,1,1,1,2,2,2]},
+         kitchen:{open:[1,1,1,1,1,1,1],mid:[0,0,0,0,1,1,1],close:[1,1,1,1,2,2,1]}},
+    rules:{rest:11,run:5,max:true},
+    pay:{cur:'kr',eve:'17:00',eveP:33,weP:0,holP:90,oncost:28,hol:'2026-12-24, 2026-12-25, 2026-12-26, 2026-12-31, 2027-01-01',sales:21000000},
+    wt:{eve:1,we:1,hol:1},
+    period:{month:''},rota:{},tail:{},archive:[],undo:null,stale:false,seed:7};
+}
+// The demo opens with the current month already closed, so the Archive and the carried balances are visible straight away.
+function seedDemo(){
+  S=demoData();L='en';
+  S.period.month=iso(new Date()).slice(0,7);generate(true);closeMonth(true);S.undo=null;save();
+}
+
+/* ============ state ============ */
+const KEY='cafe_rota_demo_v3';
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY)||'null');}catch(_e){S=null;}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(_e){}}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mins=hm=>{const[a,b]=(hm||'0:0').split(':').map(Number);return a*60+(b||0);};
+function span(s){const a=mins(s.s);let b=mins(s.e);if(b<=a)b+=1440;return[a,b];}
+const shiftH=s=>{const[a,b]=span(s);return(b-a)/60;};
+// Weighted hours (vægi): an hour can count for more than 1 toward contract and balance. Highest applicable weight wins.
+function weightedH(k,s){const W=S.wt||{eve:1,we:1,hol:1},d=parse(k),we=dow(d)>=5,hd=(S.pay.hol||'').split(',').map(x=>x.trim()).includes(k),eve=mins(S.pay.eve||'17:00');
+  const[a,b]=span(s);let h=0;for(let m=a;m<b;m+=15){let f=1;if(hd)f=Math.max(f,W.hol);if(we)f=Math.max(f,W.we);if((m%1440)>=eve||(m%1440)<360)f=Math.max(f,W.eve);h+=0.25*f;}return h;}
+const shOf=(list,id)=>list.find(x=>x.id===id);
+const sh=id=>shOf(S.shifts,id);
+const conP=(p,n)=>p.con*n/7;
+const sgn=v=>(v>0.05?'+':'')+v.toFixed(1);
+
+/* ============ generator ============ */
+function rng(seed){let x=seed>>>0||1;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return((x>>>0)%10000)/10000;};}
+function generate(silent){
+  const R=rng(S.seed++),D=days(),N=D.length,roles=['floor','kitchen'];
+  const A=D.map(()=>({}));
+  const at=(pid,i)=>i>=0?A[i][pid]:(S.tail[pid]||[])[TAIL+i]; // i<0 looks back into last month
+  const wkH=(p,i)=>{const w=wIdx(D,i);let h=0;for(let j=-dow(D[0]);j<N;j++){if(j>=0&&wIdx(D,j)!==w)continue;if(j<0&&w!==0)continue;const x=at(p.id,j);if(x&&sh(x))h+=shiftH(sh(x));}return h;};
+  const booked=p=>A.reduce((h,d,j)=>h+(d[p.id]&&sh(d[p.id])?weightedH(iso(D[j]),sh(d[p.id])):0),0);
+  const target=p=>Math.max(0,conP(p,N)-(p.carry?p.bal:0)); // carried balance evens out: minus → more hours, plus → fewer
+  function can(p,i,s){
+    const dw=dow(D[i]);
+    if(!p.days[dw]||p.allow[s.id]===false||A[i][p.id])return false;
+    const[a,b]=span(s);
+    const pv=at(p.id,i-1);if(pv&&sh(pv)){const[,pb]=span(sh(pv));if((1440+a-pb)/60<S.rules.rest)return false;}
+    if(i<N-1&&A[i+1][p.id]){const[na]=span(sh(A[i+1][p.id]));if((1440+na-b)/60<S.rules.rest)return false;}
+    let run=1;for(let j=i-1;j>=-TAIL&&at(p.id,j);j--)run++;for(let j=i+1;j<N&&A[j][p.id];j++)run++;
+    if(run>S.rules.run)return false;
+    if(S.rules.max&&wkH(p,i)+shiftH(s)>p.max)return false;
+    return true;}
+  const need=(role,s,i)=>((S.cov[role]||{})[s.id]||[])[dow(D[i])]||0;
+  const have=(role,s,i)=>S.staff.filter(p=>p.role===role&&A[i][p.id]===s.id).length;
+  // urgency = hours still owed this month ÷ days this person can still work
+  const pick=(c,i)=>{c.forEach(p=>{let left=0;for(let j=i;j<N;j++)if(p.days[dow(D[j])]&&!A[j][p.id])left++;
+    p._sc=(target(p)-booked(p))/Math.max(left,1)/8+R()*0.05;});c.sort((x,y)=>y._sc-x._sc);return c[0];};
+  // phase 1: a key-holder on every shift that needs one
+  for(let i=0;i<N;i++)S.shifts.filter(s=>s.key).forEach(s=>{
+    if(!roles.some(r=>need(r,s,i)>0))return;
+    const c=S.staff.filter(p=>p.key&&need(p.role,s,i)>have(p.role,s,i)&&can(p,i,s));
+    if(c.length)A[i][pick(c,i).id]=s.id;});
+  // phase 2: fill the rest, earliest shifts first
+  const fill=()=>{for(let i=0;i<N;i++)S.shifts.slice().sort((a,b)=>mins(a.s)-mins(b.s)).forEach(s=>roles.forEach(role=>{
+    let gap=need(role,s,i)-have(role,s,i);
+    while(gap>0){const c=S.staff.filter(p=>p.role===role&&can(p,i,s));if(!c.length)break;A[i][pick(c,i).id]=s.id;gap--;}}));};
+  fill();
+  // phase 3: balance. Move single shifts from whoever is most over target to whoever is most under,
+  // only when no rule breaks. Salaried staff (carry balance) weigh four times as much: they are paid either way.
+  const wt=p=>p.carry?4:1,dev=p=>booked(p)-target(p);
+  for(let pass=0;pass<8;pass++){let moved=false;
+    for(let i=0;i<N;i++)for(const pid of Object.keys(A[i])){
+      const p=S.staff.find(x=>x.id===pid),s=sh(A[i][pid]);if(!p||!s)continue;const h=shiftH(s),dp=dev(p);
+      const soleKey=s.key&&p.key&&!S.staff.some(x=>x!==p&&x.key&&A[i][x.id]===s.id);
+      let best=null,bestD=-0.01;
+      delete A[i][pid];
+      S.staff.forEach(q=>{if(q===p||q.role!==p.role||(soleKey&&!q.key)||!can(q,i,s))return;const dq=dev(q);
+        const d=wt(p)*((dp-h)**2-dp**2)+wt(q)*((dq+h)**2-dq**2);if(d<bestD){bestD=d;best=q;}});
+      A[i][(best||p).id]=s.id;if(best)moved=true;}
+    if(!moved)break;}
+  fill();
+  D.forEach((d,i)=>{S.rota[iso(d)]=A[i];});
+  S.stale=false;save();
+  if(!silent){renderRota();flash(t('Rota generated.'));}
+}
+
+/* ============ analysis (one calculation feeds the screen, the close and the archive) ============ */
+function analyse(){
+  const D=days(),N=D.length,out={issues:[],cells:new Set(),person:{},h:0,cost:0,gross:0,gaps:0};
+  const hol=new Set((S.pay.hol||'').split(',').map(x=>x.trim()).filter(Boolean));
+  const eve=mins(S.pay.eve||'18:00');
+  const at=(pid,i)=>i>=0?(S.rota[iso(D[i])]||{})[pid]:(S.tail[pid]||[])[TAIL+i];
+  S.staff.forEach(p=>{out.person[p.id]={h:0,wh:0,cost:0,gross:0,wk:{}};
+    // hours already worked in the first (partial) week, at the end of last month
+    for(let j=-dow(D[0]);j<0;j++){const x=at(p.id,j);if(x&&sh(x))out.person[p.id].wk[0]=(out.person[p.id].wk[0]||0)+shiftH(sh(x));}});
+  D.forEach((d,i)=>{
+    const k=iso(d),dw=dow(d),w=wIdx(D,i),day=S.rota[k]||{};
+    S.shifts.forEach(s=>{
+      ['floor','kitchen'].forEach(role=>{
+        const need=((S.cov[role]||{})[s.id]||[])[dw]||0;
+        const have=S.staff.filter(p=>p.role===role&&day[p.id]===s.id).length;
+        if(have<need){out.gaps+=need-have;out.issues.push({lv:'bad',tx:`${fmt(d)} · ${tm(s)} · ${t(role==='floor'?'Floor':'Kitchen')}: ${need-have} ${t('short')}`});}
+      });
+      const any=S.staff.some(p=>day[p.id]===s.id),keyOn=S.staff.some(p=>day[p.id]===s.id&&p.key);
+      if(s.key&&any&&!keyOn)out.issues.push({lv:'bad',tx:`${fmt(d)} · ${tm(s)}: ${t('no key-holder on')}`});
+    });
+    S.staff.forEach(p=>{
+      const sid=day[p.id];const po=out.person[p.id];
+      if(!sid)return;const s=sh(sid);if(!s)return;
+      const[a,b]=span(s),h=(b-a)/60;
+      const pv=at(p.id,i-1);
+      if(pv&&sh(pv)){const[,pb]=span(sh(pv));const gap=(1440+a-pb)/60;if(gap<S.rules.rest){out.issues.push({lv:'bad',tx:`${p.n}: ${t('rest only')} ${gap.toFixed(1)} h → ${fmt(d)}`});out.cells.add(k+'|'+p.id);}}
+      let run=1;for(let j=i-1;j>=-TAIL&&at(p.id,j);j--)run++;
+      if(run===S.rules.run+1){out.issues.push({lv:'bad',tx:`${p.n}: ${run} ${t('days in a row')} (${fmt(d)})`});out.cells.add(k+'|'+p.id);}
+      if(!p.days[dw]){out.issues.push({lv:'warn',tx:`${p.n}: ${t('not available on')} ${fmt(d)}`});out.cells.add(k+'|'+p.id);}
+      if(p.allow[sid]===false){out.issues.push({lv:'warn',tx:`${p.n}: ${t('can’t work')} ${tm(s)} (${fmt(d)})`});out.cells.add(k+'|'+p.id);}
+      const we=dw>=5,hd=hol.has(k);let pay=0;
+      for(let m=a;m<b;m+=15){let f=1;
+        if(hd)f+=S.pay.holP/100;else if(we)f+=S.pay.weP/100;else if((m%1440)>=eve||(m%1440)<360)f+=S.pay.eveP/100;
+        pay+=0.25*p.rate*f;}
+      const oc=pay*(1+(S.pay.oncost||0)/100);
+      po.h+=h;po.wh+=weightedH(k,s);po.gross+=pay;po.cost+=oc;po.wk[w]=(po.wk[w]||0)+h;out.h+=h;out.gross+=pay;out.cost+=oc;
+    });
+  });
+  S.staff.forEach(p=>{const po=out.person[p.id];
+    po.con=conP(p,N);po.open=p.carry?p.bal:0;po.close=p.carry?po.open+po.wh-po.con:null;
+    Object.keys(po.wk).forEach(w=>{if(po.wk[w]>p.max+0.01){const i0=Math.max(0,w*7-dow(D[0]));out.issues.push({lv:'warn',tx:`${p.n}: ${po.wk[w].toFixed(1)} h — ${t('over max hours in week of')} ${fmt(addD(D[i0],-dow(D[i0])))}`});}});
+    if(p.carry){if(Math.abs(po.close)>8)out.issues.push({lv:'warn',tx:`${p.n}: ${t('balance at month end')} ${sgn(po.close)} h`});}
+  });
+  return out;
+}
+
+/* ============ shared renderers (used by the live rota and the archive) ============ */
+const money=(v,cur)=>Math.round(v).toLocaleString(L==='is'?'is-IS':'en-GB')+' '+(cur||S.pay.cur);
+function gridHTML(o){ // o: {D, rota, staff, shifts, cov, edit, flags, person}
+  const D=o.D,N=D.length,W=wIdx(D,N-1)+1;let g='';
+  for(let w=0;w<W;w++){
+    const cols=[0,1,2,3,4,5,6].map(k=>{const i=w*7+k-dow(D[0]);return{i,d:addD(D[0],i)};});
+    g+=`<div class="wk">${esc(t('Week of'))} ${esc(fmtY(cols[0].d))}</div><table><thead><tr><th class="nm">${esc(t('Name'))}</th>`+
+      cols.map(c=>`<th class="${c.i<0||c.i>=N?'out':dow(c.d)>=5?'we':''}">${esc(fmt(c.d))}</th>`).join('')+`<th style="width:52px">${esc(t('Hours'))}</th></tr></thead><tbody>`;
+    ['floor','kitchen'].forEach(role=>{
+      const ppl=o.staff.filter(p=>p.role===role);if(!ppl.length)return;
+      g+=`<tr class="grp"><td class="nm">${esc(t(role==='floor'?'Floor':'Kitchen'))}</td><td colspan="8"></td></tr>`;
+      ppl.forEach(p=>{
+        const wh=((o.person[p.id]||{}).wk||{})[w]||0;
+        g+=`<tr><td class="nm">${esc(p.n)}${p.key?'<span class="key">K</span>':''}</td>`+cols.map(c=>{
+          if(c.i<0||c.i>=N){const ps=c.i<0&&o.tail?shOf(o.shifts,(o.tail[p.id]||[])[TAIL+c.i]):null;
+            return `<td class="out"${ps?` title="${esc(t(ps.n)+' '+ps.s+'–'+ps.e)}"`:''}>${ps?esc(tm(ps)):''}</td>`;}
+          const k=iso(c.d),sid=(o.rota[k]||{})[p.id]||'',s=shOf(o.shifts,sid);
+          const fl=o.flags&&o.flags.has(k+'|'+p.id)?' flag':'';
+          const tip=s?esc(t(s.n)+' '+s.s+'–'+s.e):'';
+          if(!o.edit)return `<td class="ro ${s?s.cls:''}${fl}" title="${tip}">${s?esc(tm(s)):'·'}</td>`;
+          const opts=`<option value="">·</option>`+o.shifts.map(x=>`<option value="${x.id}"${x.id===sid?' selected':''}>${esc(tm(x))}</option>`).join('');
+          return `<td class="${s?s.cls:''}${fl}"><select data-d="${k}" data-p="${p.id}" title="${tip}" aria-label="${esc(p.n+' '+fmt(c.d))}">${opts}</select></td>`;}).join('')+
+          `<td class="right${wh>p.max+0.01?' neg':''}">${wh.toFixed(1)}</td></tr>`;
+      });
+    });
+    o.shifts.forEach(s=>{
+      g+=`<tr class="cov"><td class="nm">${esc(tm(s))}</td>`+cols.map(c=>{
+        if(c.i<0||c.i>=N)return '<td class="out"></td>';
+        const dw=dow(c.d),day=o.rota[iso(c.d)]||{};
+        const nf=((o.cov.floor||{})[s.id]||[])[dw]||0,nk=((o.cov.kitchen||{})[s.id]||[])[dw]||0;
+        const hf=o.staff.filter(p=>p.role==='floor'&&day[p.id]===s.id).length,hk=o.staff.filter(p=>p.role==='kitchen'&&day[p.id]===s.id).length;
+        return `<td class="${hf<nf||hk<nk?'short':''}">${hf}/${nf} · ${hk}/${nk}</td>`;}).join('')+'<td></td></tr>';
+    });
+    g+='</tbody></table>';
+  }
+  return g;
+}
+function hoursHTML(rows,cur){ // rows: [{n,role,carry,con,h,open,close,cost}]
+  let h=`<table><thead><tr><th>${esc(t('Name'))}</th><th>${esc(t('Area'))}</th><th class="right">${esc(t('Contract'))}</th><th class="right">${esc(t('Booked'))}</th><th class="right" title="${esc(t('Hours × weights (vægi)'))}">${esc(t('Weighted'))}</th><th class="right">${esc(t('This month'))}</th><th class="right">${esc(t('Opening'))}</th><th class="right">${esc(t('Closing'))}</th><th class="right">${esc(t('Cost'))}</th></tr></thead><tbody>`;
+  let tc=0,tb=0,tw=0,tcost=0;
+  rows.forEach(r=>{const wh=r.wh!=null?r.wh:r.h,df=wh-r.con;tc+=r.con;tb+=r.h;tw+=wh;tcost+=r.cost;
+    h+=`<tr><td>${esc(r.n)}</td><td>${esc(t(r.role))}</td><td class="right">${r.con.toFixed(1)}</td><td class="right">${r.h.toFixed(1)}</td><td class="right">${wh.toFixed(1)}</td><td class="right ${df<-8?'neg':''}">${sgn(df)}</td>`+
+      (r.carry?`<td class="right">${sgn(r.open)}</td><td class="right ${Math.abs(r.close)>8?'neg':''}"><b>${sgn(r.close)}</b></td>`:`<td class="right sub">–</td><td class="right sub">${esc(t('hourly'))}</td>`)+
+      `<td class="right">${money(r.cost,cur)}</td></tr>`;});
+  return h+`<tr><td><b>${esc(t('Total'))}</b></td><td></td><td class="right"><b>${tc.toFixed(1)}</b></td><td class="right"><b>${tb.toFixed(1)}</b></td><td class="right"><b>${tw.toFixed(1)}</b></td><td class="right"><b>${sgn(tw-tc)}</b></td><td></td><td></td><td class="right"><b>${money(tcost,cur)}</b></td></tr></tbody></table>`;
+}
+const rowsFrom=A=>S.staff.map(p=>{const po=A.person[p.id];return{id:p.id,n:p.n,role:p.role,carry:p.carry,con:po.con,h:po.h,wh:po.wh,open:po.open,close:po.close,cost:po.cost};});
+
+/* ============ render: rota ============ */
+function renderRota(){
+  const D=days(),m=parse(S.period.month+'-01');
+  $('pMonth').innerHTML=ML[L].map((x,i)=>`<option value="${i}"${i===m.getMonth()?' selected':''}>${esc(x)}</option>`).join('');
+  const y0=new Date().getFullYear();let ys='';for(let y=y0-1;y<=y0+2;y++)ys+=`<option${y===m.getFullYear()?' selected':''}>${y}</option>`;$('pYear').innerHTML=ys;
+  $('pEcho').textContent='= '+fmtY(D[0])+' – '+fmtY(D[D.length-1]);
+  $('staleNote').style.display=S.stale?'block':'none';
+  $('closeBtn').textContent=t('Close {m} & start next ▸',{m:monthName(S.period.month)});
+  const A=analyse();
+  const pct=S.pay.sales>0?A.cost/S.pay.sales*100:null;
+  $('stats').innerHTML=[
+    [t('Staff hours'),A.h.toFixed(0)+' h',monthName(S.period.month)],
+    [t('Wage cost incl. on-costs'),money(A.cost),t('gross')+' '+money(A.gross)+' + '+(S.pay.oncost||0)+' %'],
+    [t('Labour cost % of sales'),pct==null?'–':pct.toFixed(1)+' %',t('Expected sales per month')+': '+money(S.pay.sales)],
+    [t('Open gaps'),String(A.gaps),'']
+  ].map(([l,v,s])=>`<div class="stat"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join('');
+  const iss=A.issues;
+  $('checks').innerHTML=iss.length?iss.slice(0,40).map(x=>`<li class="${x.lv}">${esc(x.tx)}</li>`).join('')+(iss.length>40?`<li class="warn">+${iss.length-40}</li>`:''):`<li class="ok">✓ ${esc(t('All good — every shift is covered and no rule is broken.'))}</li>`;
+  $('grid').innerHTML=gridHTML({D,rota:S.rota,staff:S.staff,shifts:S.shifts,cov:S.cov,edit:true,flags:A.cells,person:A.person,tail:S.tail});
+  $('legend').innerHTML=S.shifts.map(s=>`<span style="--c:var(--${s.id})">${esc(t(s.n))} ${esc(tm(s))}</span>`).join('')+`<span style="--c:#fff;"><span class="key">K</span> ${esc(t('key-holder'))}</span>`;
+  $('hoursTbl').innerHTML=hoursHTML(rowsFrom(A));
+  renderMine();
+}
+$('grid').addEventListener('change',e=>{const el=e.target;if(!el.dataset.d)return;const k=el.dataset.d;S.rota[k]=S.rota[k]||{};
+  if(el.value)S.rota[k][el.dataset.p]=el.value;else delete S.rota[k][el.dataset.p];save();renderRota();});
+function setMonth(ym){S.period.month=ym;
+  if(!days().some(d=>Object.keys(S.rota[iso(d)]||{}).length))generate(true);S.stale=false;save();renderRota();}
+$('pMonth').onchange=$('pYear').onchange=()=>setMonth($('pYear').value+'-'+String(+$('pMonth').value+1).padStart(2,'0'));
+
+/* ============ close month → archive → carry balances ============ */
+let modalOk=null;
+function openModal(title,body,okLabel,fn){$('mTitle').textContent=title;$('mBody').innerHTML=body;$('mOk').textContent=okLabel;modalOk=fn;$('modal').classList.add('on');}
+function closeModal(){$('modal').classList.remove('on');modalOk=null;}
+$('mCancel').onclick=closeModal;$('mOk').onclick=()=>{const f=modalOk;closeModal();if(f)f();};
+$('modal').onclick=e=>{if(e.target.id==='modal')closeModal();};
+$('closeBtn').onclick=()=>{
+  const A=analyse(),m=S.period.month,nm=nextMonth(m),bad=A.issues.filter(x=>x.lv==='bad').length;
+  const carry=S.staff.filter(p=>p.carry).map(p=>{const po=A.person[p.id];return `<li>${esc(p.n)}: ${sgn(po.open)} → <b>${sgn(po.close)} h</b></li>`;}).join('');
+  openModal(t('Close {m}?',{m:monthName(m)}),
+    `<p style="font-size:13.5px">${esc(t('The rota, staff list, pay rates, hours and cost are filed in the Archive exactly as they are now.'))}</p>`+
+    (carry?`<p style="font-size:13.5px;margin-top:8px">${esc(t('Balances carried into {m}:',{m:monthName(nm)}))}</p><ul>${carry}</ul>`:`<p class="sub" style="margin-top:8px">${esc(t('No one has “carry balance” ticked, so no balances move.'))}</p>`)+
+    (bad?`<p class="note" style="display:block">${esc(t('This month still has {n} problem(s) in Checks. You can still close it.',{n:bad}))}</p>`:'')+
+    `<p class="sub">${esc(t('Then {m} opens and a new rota is generated. Undo is available in the Archive tab.',{m:monthName(nm)}))}</p>`,
+    t('Close month'),()=>{const was=monthName(m);closeMonth(false);flash(t('{m} filed. {n} generated.',{m:was,n:monthName(S.period.month)}));});
+};
+function closeMonth(silent){
+  const A=analyse(),D=days(),m=S.period.month;
+  S.undo=JSON.stringify(Object.assign({},S,{undo:null}));
+  const rota={};D.forEach(d=>{rota[iso(d)]=Object.assign({},S.rota[iso(d)]||{});});
+  S.archive.unshift({id:'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),month:m,closedAt:iso(new Date()),
+    staff:JSON.parse(JSON.stringify(S.staff)),shifts:JSON.parse(JSON.stringify(S.shifts)),cov:JSON.parse(JSON.stringify(S.cov)),pay:JSON.parse(JSON.stringify(S.pay)),rota,
+    sum:{rows:rowsFrom(A),h:A.h,cost:A.cost,sales:S.pay.sales,gaps:A.gaps}});
+  // carry balances + remember the last days for next month's rest and days-in-a-row rules
+  S.staff.forEach(p=>{const po=A.person[p.id];if(p.carry)p.bal=Math.round(po.close*10)/10;
+    S.tail[p.id]=D.slice(-TAIL).map(d=>(S.rota[iso(d)]||{})[p.id]||null);});
+  D.forEach(d=>delete S.rota[iso(d)]);
+  S.period.month=nextMonth(m);generate(true);save();
+  if(!silent){renderAll();}
+}
+
+/* ============ archive ============ */
+let viewing=null;
+function renderArchive(){
+  $('undoBtn').style.display=S.undo?'':'none';
+  if(!S.archive.length){$('archList').innerHTML=`<p class="sub">${esc(t('Nothing archived yet. Close a month on the Rota tab to file it here.'))}</p>`;$('archView').style.display='none';return;}
+  $('archList').innerHTML=S.archive.map(e=>{const pct=e.sum.sales>0?(e.sum.cost/e.sum.sales*100).toFixed(1)+' %':'–';
+    return `<div class="arch${viewing===e.id?' sel':''}"><span class="t">${esc(monthName(e.month))}</span>
+      <span class="m">${e.sum.h.toFixed(0)} ${esc(t('hours'))} · ${money(e.sum.cost,e.pay.cur)} · ${pct} ${esc(t('labour'))} · ${esc(t('closed'))} ${esc(fmtY(parse(e.closedAt)))}</span>
+      <button class="btn sec small" data-v="${e.id}">${esc(t(viewing===e.id?'Hide':'View'))}</button>
+      <button class="btn sec small" data-x="${e.id}">${esc(t('Download for Excel'))}</button>
+      <button class="btn sec small danger" data-r="${e.id}">${esc(t('Remove'))}</button></div>`;}).join('');
+  const e=S.archive.find(x=>x.id===viewing);
+  if(!e){$('archView').style.display='none';return;}
+  const D=daysOf(e.month),person={};
+  e.staff.forEach(p=>{person[p.id]={wk:{}};D.forEach((d,i)=>{const s=shOf(e.shifts,(e.rota[iso(d)]||{})[p.id]);if(s){const w=wIdx(D,i);person[p.id].wk[w]=(person[p.id].wk[w]||0)+shiftH(s);}});});
+  $('archView').style.display='block';
+  $('archView').innerHTML=`<h3>${esc(monthName(e.month))}</h3><div class="grid scroll">${gridHTML({D,rota:e.rota,staff:e.staff,shifts:e.shifts,cov:e.cov,edit:false,person})}</div>
+    <h3 style="margin-top:16px">${esc(t('Hours, balance & wage cost'))}</h3><div class="scroll">${hoursHTML(e.sum.rows,e.pay.cur)}</div>`;
+}
+$('archList').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;
+  if(b.dataset.v){viewing=viewing===b.dataset.v?null:b.dataset.v;renderArchive();}
+  if(b.dataset.x){const e=S.archive.find(x=>x.id===b.dataset.x);downloadCSV(daysOf(e.month),e.rota,e.staff,e.shifts,e.sum.rows,e.pay.cur,'rota_'+e.month+'_archived.csv');}
+  if(b.dataset.r){const e=S.archive.find(x=>x.id===b.dataset.r);
+    openModal(t('Remove {m} from the Archive?',{m:monthName(e.month)}),`<p style="font-size:13.5px">${esc(t('Balances already carried forward are not changed. Undo is available straight after.'))}</p>`,t('Remove'),()=>{
+      S.undo=JSON.stringify(Object.assign({},S,{undo:null}));S.archive=S.archive.filter(x=>x.id!==e.id);if(viewing===e.id)viewing=null;save();renderArchive();});}
+};
+$('undoBtn').onclick=()=>{if(!S.undo)return;const prev=JSON.parse(S.undo);S=prev;S.undo=null;save();renderAll();flash(t('Undone.'));};
+
+/* ============ render: settings ============ */
+function renderStaff(){
+  let h=`<table><thead><tr><th>${esc(t('Name'))}</th><th>${esc(t('Area'))}</th><th>${esc(t('Key'))}</th><th>${esc(t('Contract h/wk'))}</th><th>${esc(t('Max h/wk'))}</th><th>${esc(t('Rate/h'))}</th><th>${esc(t('Carry'))}</th><th>${esc(t('Balance h'))}</th><th>${esc(t('Days'))}</th><th>${esc(t('Shifts'))}</th><th></th></tr></thead><tbody>`;
+  S.staff.forEach((p,i)=>{
+    h+=`<tr><td><input class="nm" data-s="${i}" data-f="n" value="${esc(p.n)}"></td>
+      <td><select data-s="${i}" data-f="role"><option value="floor"${p.role==='floor'?' selected':''}>${esc(t('floor'))}</option><option value="kitchen"${p.role==='kitchen'?' selected':''}>${esc(t('kitchen'))}</option></select></td>
+      <td><input type="checkbox" data-s="${i}" data-f="key"${p.key?' checked':''}></td>
+      <td><input type="number" min="0" max="60" data-s="${i}" data-f="con" value="${p.con}"></td>
+      <td><input type="number" min="0" max="70" data-s="${i}" data-f="max" value="${p.max}"></td>
+      <td><input type="number" min="0" step="50" data-s="${i}" data-f="rate" value="${p.rate}"></td>
+      <td><input type="checkbox" data-s="${i}" data-f="carry"${p.carry?' checked':''}></td>
+      <td><input type="number" step="0.5" style="width:64px" data-s="${i}" data-f="bal" value="${p.bal}"${p.carry?'':' disabled'}></td>
+      <td><span class="days">${DN[L].map((dn,j)=>`<label>${esc(dn)}<input type="checkbox" data-s="${i}" data-f="day" data-j="${j}"${p.days[j]?' checked':''}></label>`).join('')}</span></td>
+      <td><span class="days">${S.shifts.map(s=>`<label title="${esc(t(s.n))}">${esc(tm(s))}<input type="checkbox" data-s="${i}" data-f="allow" data-j="${s.id}"${p.allow[s.id]!==false?' checked':''}></label>`).join('')}</span></td>
+      <td><button class="rm" data-rm="${i}" title="${esc(t('Remove'))}">×</button></td></tr>`;});
+  $('staffTbl').innerHTML=h+'</tbody></table>';
+}
+$('staffTbl').addEventListener('change',e=>{const el=e.target,i=el.dataset.s;if(i===undefined)return;const p=S.staff[i],f=el.dataset.f;
+  if(f==='key'||f==='carry')p[f]=el.checked;else if(f==='day')p.days[+el.dataset.j]=el.checked?1:0;else if(f==='allow')p.allow[el.dataset.j]=el.checked;
+  else if(f==='bal')p.bal=+el.value||0;else if(['con','max','rate'].includes(f))p[f]=Math.max(0,+el.value||0);else p[f]=el.value;
+  changed();if(f==='role'||f==='carry')renderStaff();});
+$('staffTbl').addEventListener('click',e=>{const i=e.target.dataset.rm;if(i===undefined)return;const p=S.staff[i];
+  openModal(t('Remove')+' '+p.n+'?','',t('Remove'),()=>{S.staff.splice(i,1);Object.values(S.rota).forEach(d=>delete d[p.id]);changed();renderStaff();});});
+$('addStaff').onclick=()=>{S.staff.push({id:'p'+Math.random().toString(36).slice(2,8),n:t('New person'),role:'floor',key:false,con:20,max:28,rate:3200,days:[1,1,1,1,1,1,1],allow:{open:true,mid:true,close:true},carry:false,bal:0});changed();renderStaff();};
+
+function renderShifts(){
+  $('shiftTbl').innerHTML=`<table><thead><tr><th></th><th>${esc(t('Start'))}</th><th>${esc(t('End'))}</th><th>${esc(t('Hours'))}</th><th>${esc(t('key-holder'))}</th></tr></thead><tbody>`+
+    S.shifts.map((s,i)=>`<tr><td><b>${esc(t(s.n))}</b></td><td><input type="time" data-h="${i}" data-f="s" value="${s.s}"></td><td><input type="time" data-h="${i}" data-f="e" value="${s.e}"></td><td>${shiftH(s).toFixed(1)}</td><td><input type="checkbox" data-h="${i}" data-f="key"${s.key?' checked':''}></td></tr>`).join('')+'</tbody></table>';
+  let c='';
+  [['floor','Floor'],['kitchen','Kitchen']].forEach(([r,lab])=>{
+    c+=`<table style="margin-bottom:12px"><thead><tr><th>${esc(t(lab))}</th>${DN[L].map(d=>`<th>${esc(d)}</th>`).join('')}</tr></thead><tbody>`+
+      S.shifts.map(s=>`<tr><td>${esc(t(s.n))} <span class="sub">${esc(tm(s))}</span></td>${[0,1,2,3,4,5,6].map(j=>`<td><input type="number" min="0" max="9" style="width:52px" data-r="${r}" data-sid="${s.id}" data-j="${j}" value="${((S.cov[r]||{})[s.id]||[])[j]||0}"></td>`).join('')}</tr>`).join('')+'</tbody></table>';});
+  $('covTbl').innerHTML=c;
+}
+$('shiftTbl').addEventListener('change',e=>{const el=e.target,i=el.dataset.h;if(i===undefined)return;const s=S.shifts[i];
+  if(el.dataset.f==='key')s.key=el.checked;else if(/^\d\d:\d\d$/.test(el.value))s[el.dataset.f]=el.value;changed();renderShifts();renderStaff();});
+$('covTbl').addEventListener('change',e=>{const el=e.target;if(!el.dataset.r)return;const r=el.dataset.r;S.cov[r]=S.cov[r]||{};S.cov[r][el.dataset.sid]=S.cov[r][el.dataset.sid]||[0,0,0,0,0,0,0];
+  S.cov[r][el.dataset.sid][+el.dataset.j]=Math.max(0,+el.value||0);changed();});
+
+function renderRules(){
+  const R=S.rules,P=S.pay;
+  $('rulesBox').innerHTML=`<label class="f">${esc(t('Minimum rest between shifts (h)'))}<input type="number" min="0" max="24" data-g="rules" data-f="rest" value="${R.rest}"></label>
+    <label class="f">${esc(t('Max days in a row'))}<input type="number" min="1" max="14" data-g="rules" data-f="run" value="${R.run}"></label>
+    <label class="f" style="flex-direction:row;align-items:center;gap:6px;padding-bottom:6px"><input type="checkbox" data-g="rules" data-f="max"${R.max?' checked':''}>${esc(t('Keep within each person’s max hours'))}</label>`;
+  $('payBox').innerHTML=`<label class="f">${esc(t('Currency'))}<input style="width:60px" data-g="pay" data-f="cur" value="${esc(P.cur)}"></label>
+    <label class="f">${esc(t('Evening starts at'))}<input type="time" data-g="pay" data-f="eve" value="${P.eve}"></label>
+    <label class="f">${esc(t('Evening extra %'))}<input type="number" min="0" data-g="pay" data-f="eveP" value="${P.eveP}"></label>
+    <label class="f">${esc(t('Weekend extra %'))}<input type="number" min="0" data-g="pay" data-f="weP" value="${P.weP}"></label>
+    <label class="f">${esc(t('Public holiday extra %'))}<input type="number" min="0" data-g="pay" data-f="holP" value="${P.holP}"></label>
+    <label class="f">${esc(t('Employer on-costs %'))}<input type="number" min="0" step="0.5" data-g="pay" data-f="oncost" value="${P.oncost||0}"></label>
+    <label class="f">${esc(t('Expected sales per month'))}<input type="number" min="0" step="100000" style="width:130px" data-g="pay" data-f="sales" value="${P.sales}"></label>
+    <label class="f" style="flex:1 1 100%">${esc(t('Public holidays (YYYY-MM-DD, comma-separated)'))}<input data-g="pay" data-f="hol" value="${esc(P.hol)}"></label>`;
+  const W=S.wt=S.wt||{eve:1,we:1,hol:1};
+  $('wtBox').innerHTML=[['eve','Evening weight'],['we','Weekend weight'],['hol','Public holiday weight']].map(([k,l])=>
+    `<label class="f">${esc(t(l))}<input type="number" min="1" max="3" step="0.01" data-g="wt" data-f="${k}" value="${Number(W[k]).toFixed(2)}"></label>`).join('')+
+    `<span class="sub" style="padding-bottom:7px">${esc(t('Example: 1.05 means 10 evening hours count as 10.5.'))}</span>`;
+}
+document.addEventListener('change',e=>{const el=e.target,g=el.dataset.g;if(!g)return;const f=el.dataset.f;
+  S[g][f]=el.type==='checkbox'?el.checked:el.type==='number'?(+el.value||0):el.value;
+  if(g==='wt'&&!(S.wt[f]>=1))S.wt[f]=1;
+  if(g==='rules'||g==='wt')changed();else{save();renderRota();}});
+function changed(){S.stale=days().some(d=>Object.keys(S.rota[iso(d)]||{}).length);save();renderRota();}
+
+/* ============ my shifts ============ */
+function renderMine(){
+  const sel=$('mineWho'),cur=sel.value;
+  sel.innerHTML=S.staff.map(p=>`<option value="${p.id}">${esc(p.n)}</option>`).join('');
+  if(cur&&S.staff.some(p=>p.id===cur))sel.value=cur;
+  const pid=sel.value,rows=[];
+  days().forEach(d=>{const sid=(S.rota[iso(d)]||{})[pid];if(sid){const s=sh(sid);if(s)rows.push([fmt(d),`${s.s}–${s.e}`]);}});
+  $('mineList').innerHTML=rows.length?rows.map(r=>`<div><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div>`).join(''):`<p class="sub">${esc(t('No shifts in this period.'))}</p>`;
+  $('mineList').dataset.txt=rows.map(r=>r[0]+': '+r[1]).join('\n');
+}
+$('mineWho').onchange=renderMine;
+$('copyMine').onclick=async()=>{const txt=($('mineWho').selectedOptions[0]||{}).text+' — '+monthName(S.period.month)+'\n'+$('mineList').dataset.txt;
+  try{await navigator.clipboard.writeText(txt);$('copyMsg').textContent=t('Copied.');}catch(_e){$('copyMsg').textContent=t('Copy failed — select the text and copy it by hand.');}
+  setTimeout(()=>$('copyMsg').textContent='',3000);};
+
+/* ============ export ============ */
+function downloadCSV(D,rota,staff,shifts,rows,cur,name){
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const out=[[t('Name'),t('Area'),...D.map(d=>fmtY(d))].map(q).join(',')];
+  staff.forEach(p=>out.push([p.n,t(p.role),...D.map(d=>{const s=shOf(shifts,(rota[iso(d)]||{})[p.id]);return s?`${s.s}-${s.e}`:'';})].map(q).join(',')));
+  out.push('');out.push([t('Name'),t('Contract'),t('Booked'),t('Weighted'),t('Opening'),t('Closing'),t('Cost')+' ('+cur+')'].map(q).join(','));
+  rows.forEach(r=>out.push([r.n,r.con.toFixed(1),r.h.toFixed(1),(r.wh!=null?r.wh:r.h).toFixed(1),r.carry?r.open.toFixed(1):t('hourly'),r.carry?r.close.toFixed(1):'',Math.round(r.cost)].map(q).join(',')));
+  const blob=new Blob(['\ufeff'+out.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+$('csvBtn').onclick=()=>downloadCSV(days(),S.rota,S.staff,S.shifts,rowsFrom(analyse()),S.pay.cur,`rota_${S.period.month}.csv`);
+$('printBtn').onclick=()=>window.print();
+
+/* ============ wiring ============ */
+let flashT=null;
+function flash(m){const n=$('pEcho');n.textContent=m;n.style.color='var(--okc)';clearTimeout(flashT);flashT=setTimeout(()=>{n.style.color='';renderRota();},2200);}
+$('genBtn').onclick=()=>generate(false);
+$('tabs').onclick=e=>{const p=e.target.dataset.p;if(!p)return;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===e.target));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('on',x.id==='p-'+p));};
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{L=S.lang=b.dataset.l;save();applyLang();renderAll();});
+$('resetBtn').onclick=e=>{e.preventDefault();openModal(t('Reset the demo to its starting data?'),'',t('Reset demo'),()=>{try{localStorage.removeItem(KEY);}catch(_e){}viewing=null;seedDemo();applyLang();renderAll();});};
+function renderAll(){$('bizName').textContent=S.biz;renderStaff();renderShifts();renderRules();renderRota();renderArchive();}
+if(!S||S.v!==3)seedDemo();
+L=S.lang||'en';
+applyLang();renderAll();
+</script>
+</body>
+</html>

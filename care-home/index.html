@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift scheduler — DEMO</title>
+<style>
+  :root{--bg:#faf9f5;--card:#fff;--ink:#141413;--mut:#5c5c5a;--faint:#8c8c8a;--line:#e5e4df;--accent:#C15F3C;--accentbg:#f7ece7;
+        --day:#cfe2f3;--eve:#fce5cd;--night:#d9d2e9;--we:#efeeea;--ok:#e1f5ee;--okink:#0f6e56;--warn:#faeeda;--warnink:#854f0b;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;padding:18px}
+  .wrap{max-width:1120px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-size:18px;font-weight:600}
+  .sub{font-size:12px;color:var(--faint)}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500;padding:7px 12px;font-size:13px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;flex-wrap:wrap}
+  .tab{padding:9px 14px;font-size:13px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;background:none;border:none;font-weight:500}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+  .panel{display:none}.panel.on{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .card h3{font-size:13px;font-weight:600;color:var(--mut);margin-bottom:4px}
+  .card .hint{font-size:12px;color:var(--faint);margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;color:var(--faint);font-weight:500;padding:5px 6px}
+  td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:middle}
+  input,select{font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:5px 6px;background:#fff;color:var(--ink)}
+  input.num{width:44px;text-align:center}input.t{width:150px}
+  input[type=checkbox]{accent-color:#e3ccbe}
+  .rm{cursor:pointer;color:#a32d2d;font-size:16px;border:none;background:none;line-height:1}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .stat{background:#f5f4ef;border-radius:8px;padding:9px 12px}
+  .stat .l{font-size:11.5px;color:var(--faint)}.stat .v{font-size:15px;font-weight:600;margin-top:2px}
+  .tt{overflow-x:auto;cursor:grab}.tt.drag{cursor:grabbing}.tt.drag *{user-select:none}
+  .outwin{opacity:.42}
+  .tt table{font-size:11px;table-layout:fixed;min-width:940px}
+  .tt th,.tt td{border:1px solid var(--line);text-align:center;padding:3px 2px;width:64px}
+  .tt td.cell{cursor:pointer}
+  .tt td.name{text-align:left;font-weight:600;width:96px;position:sticky;left:0;background:#fff;cursor:default}
+  .tt th.name{width:96px;position:sticky;left:0;background:#f5f4ef;z-index:1}
+  .tt th{background:#f5f4ef}
+  .c-day{background:var(--day)}.c-eve{background:var(--eve)}.c-night{background:var(--night)}.wecell{background:var(--we)}
+  .wk-pink{background:#fbecf2}.wk-blue{background:#eaf2fb}.wk-red{background:#fcebeb}
+  .daygrp{display:flex;gap:2px;flex-wrap:wrap}.daychip{font-size:10px;padding:2px 4px;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:var(--faint);user-select:none}.daychip.on{background:#e3ccbe;color:#7e4227;border-color:#d0a78f}
+  .note{display:flex;gap:8px;align-items:flex-start;border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:12px}
+  .st-ok{color:#0f6e56;font-weight:600}.st-un{color:#1f6feb;font-weight:600}.st-ov{color:#c0392b;font-weight:600}
+  #audit table{border-collapse:collapse}#audit th,#audit td{border:1px solid var(--line);padding:5px 8px}
+  #audit thead th{background:#ececea;color:var(--ink);font-weight:700}
+  .legend{display:flex;gap:14px;font-size:12px;flex-wrap:wrap;margin-top:8px;color:var(--mut)}
+  .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;background:var(--accentbg);color:var(--accent)}
+  .rulehead{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin:16px 0 7px}
+  .rulelist{display:flex;flex-direction:column;gap:8px;font-size:13px}
+  .ruleul{margin:0;padding-left:18px;font-size:13px;line-height:1.5;color:var(--ink)}
+  .ruleul li{margin-bottom:5px}
+  .modalwrap{position:fixed;inset:0;background:rgba(20,18,16,.45);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px}
+  .modalwrap[hidden]{display:none}
+  .modalbox{background:var(--card,#fff);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:560px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.22)}
+  .modalbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .mtab{border-collapse:collapse;width:100%;font-size:12px}
+  .mtab th,.mtab td{border:1px solid var(--line);padding:3px 7px;text-align:left}
+  .mtab th{background:var(--accentbg);font-weight:700}
+  .archcard{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+  .archhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .archbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .archview{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  .archview[hidden]{display:none}
+  #langRow{display:flex;justify-content:flex-end;margin:0 0 8px}
+  #langBtns{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+  .langb{border:0;background:transparent;color:var(--mut);padding:4px 13px;font-size:12px;font-weight:800;letter-spacing:.03em;cursor:pointer}
+  .langb+.langb{border-left:1px solid var(--line)}
+  .langb.on{background:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="langRow"><div id="langBtns">
+    <button class="langb" data-l="is" onclick="setLang('is')" title="Íslenska">IS</button>
+    <button class="langb" data-l="en" onclick="setLang('en')" title="English">EN</button>
+  </div></div>
+  <header>
+    <div>
+      <h1>Organisation<sup>*</sup> shifts scheduler <span class="pill">monthly view · 11th→10th</span></h1>
+      <div class="sub" style="margin-top:3px">*Hospital, Care-home, Elderly-home, any Production or Organisation with shifts</div>
+    </div>
+    <button class="btn" onclick="generate()">▶ Generate schedule</button>
+  </header>
+
+  <!-- Browser self-check: tells whoever opens this file whether their browser can save to a real file -->
+  <div id="fsBanner" style="display:none;margin:10px 0;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.45;border:1px solid transparent">
+    <span id="fsBannerTxt"></span>
+    <button id="fsBannerX" onclick="document.getElementById('fsBanner').style.display='none'"
+      style="float:right;border:0;background:none;font-size:15px;line-height:1;cursor:pointer;opacity:.5;padding:0 2px" title="Hide">×</button>
+  </div>
+
+<div id="demoBanner" style="background:#fff4d6;border:1px solid #e8d49a;color:#6b5210;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px"><b>Demo</b> — a fictional care home with made-up staff. Everything you change stays in this browser only. <a href="#" onclick="resetDemo();return false" style="color:inherit;font-weight:600">Reset demo data</a></div>
+  <div class="bar">
+    <button class="btn" onclick="fileSave()" id="fsSaveBtn" title="Keep your rota in a file on this computer">💾 Save to my computer</button>
+    <button class="btn sec" id="undoBtn" onclick="undoLast()" title="Undo the last change (steps back through recent edits)">↺ Undo</button>
+    <input type="file" id="fsPick" accept=".json,application/json" style="display:none" onchange="fileOpenFallback(event)">
+    <span class="sub" id="savedTag" style="color:#2e7d32;opacity:.45;transition:opacity .3s">auto-save on</span>
+    <span class="sub" id="fileTag" style="color:#8a6d3b;border-left:1px solid #ddd;padding-left:9px;margin-left:3px">no file linked yet</span>
+    <span class="sub" id="saveMsg"></span>
+    <!-- rarely needed: kept as quiet links so the two real buttons stand alone -->
+    <span class="sub" style="margin-left:auto;opacity:.6">
+      <a href="#" onclick="fileOpen();return false" title="Open a rota file you saved earlier" style="color:inherit">Open a saved file</a>
+      &nbsp;·&nbsp;
+      <a href="#" onclick="bakeDownload();return false" title="Save a copy of this whole page with your data baked in" style="color:inherit">Download HTML</a>
+    </span>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-t="out">Timetable</button>
+    <button class="tab" data-t="staff">Staff</button>
+    <button class="tab" data-t="off">Time</button>
+    <button class="tab" data-t="shifts">Shifts &amp; coverage</button>
+    <button class="tab" data-t="rules">Rules</button>
+    <button class="tab" data-t="arch">Archive</button>
+  </div>
+
+  <div class="panel" id="p-staff">
+    <div class="card">
+      <h3>Staff</h3>
+      <div class="hint">Add or remove people, change their role, %, which shift types they can work, and their carried balance. Roles: boss (off-floor), supervisor, floor. A floor person is scheduled automatically — unless you fill in their Pattern, in which case that fixed pattern is copied and repeated (add the word 'fill' to the pattern to also auto-schedule their remaining days, e.g. weekends fixed, weekdays filled). In Pattern, the number is the day of the fortnight: 1=Mon, 2=Tue … 7=Sun, 8=next Mon … 14=next Sun; it repeats every 14 days. The 11th–10th window only affects the balance, not the pattern. Wknd = the fortnight weekend-days a person works, e.g. 6,7 (Sat+Sun of week 1) or 13,14 (week 2); leave blank to auto-alternate.</div>
+      <table id="staffTable"><thead><tr><th>Name</th><th>Role</th><th>%</th><th>Can work</th><th>No day on</th><th>No eve on</th><th>Wknd</th><th>Pattern (keep)</th><th>+/− hours balance from last month</th><th></th></tr></thead><tbody></tbody></table>
+      <button class="btn sec" style="margin-top:10px" onclick="addStaff()">+ Add person</button>
+      <button class="btn ghost" style="margin-top:10px" onclick="resetBalances()">Set all balances to zero</button>
+    </div>
+  </div>
+
+  <div class="panel" id="p-off">
+    <div class="card">
+      <h3>Period</h3>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="sub">Count +/- from</span><input type="date" id="countFrom" value="2026-09-11" style="width:140px">
+        <b class="sub" id="echoFrom" style="color:#8a4b2a"></b>
+        <span class="sub">to</span><input type="date" id="countTo" value="2026-10-10" style="width:140px">
+        <b class="sub" id="echoTo" style="color:#8a4b2a"></b>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+          <span class="sub">Fortnight counts from</span><input type="date" id="anchor" value="2026-09-07" style="width:140px">
+          <b class="sub" id="echoAnchor" style="color:#8a4b2a"></b>
+        </div>
+        <div class="sub" style="margin-top:6px">The timetable starts on the Monday of the “from” week and shows enough weeks to cover “to”.</div>
+        <div class="sub" style="margin-top:4px"><b>Leave “fortnight counts from” alone once it is set.</b> It is the fixed Monday that day 1 of every pattern is measured from, so patterns and weekend groups stay in step when you move to the next month. Change it and everyone's fortnight shifts.</div>
+      <div class="sub" style="margin-top:4px">The date boxes above are drawn by your browser, so their order (day/month or month/day) follows your computer's country setting. <b>Always check the spelled-out date shown beside each box</b> — that one is the same on every computer.</div>
+    </div>
+    <div class="card">
+      <h3>Holiday</h3>
+      <div class="hint">Holidays, single days off, or a temporary contract ending. Pick the actual dates — the generator won't schedule anyone during those dates.</div>
+      <table id="offTable"><thead><tr><th>Who</th><th>Type</th><th>From</th><th>To</th><th></th></tr></thead><tbody></tbody></table>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="offWho"></select>
+        <select id="offType"><option value="holiday">holiday</option><option value="day off">day off</option><option value="temporary end">temporary end</option><option value="sick">sick</option></select>
+        <span class="sub">from</span><select id="offFrom"><option value="0">Mon 7/9</option><option value="1">Tue 8/9</option><option value="2">Wed 9/9</option><option value="3">Thu 10/9</option><option value="4">Fri 11/9</option><option value="5">Sat 12/9</option><option value="6">Sun 13/9</option><option value="7">Mon 14/9</option><option value="8">Tue 15/9</option><option value="9">Wed 16/9</option><option value="10">Thu 17/9</option><option value="11">Fri 18/9</option><option value="12">Sat 19/9</option><option value="13">Sun 20/9</option><option value="14">Mon 21/9</option><option value="15">Tue 22/9</option><option value="16">Wed 23/9</option><option value="17">Thu 24/9</option><option value="18">Fri 25/9</option><option value="19">Sat 26/9</option><option value="20">Sun 27/9</option><option value="21">Mon 28/9</option><option value="22">Tue 29/9</option><option value="23">Wed 30/9</option><option value="24">Thu 1/10</option><option value="25">Fri 2/10</option><option value="26">Sat 3/10</option><option value="27">Sun 4/10</option><option value="28">Mon 5/10</option><option value="29">Tue 6/10</option><option value="30">Wed 7/10</option><option value="31">Thu 8/10</option><option value="32">Fri 9/10</option><option value="33">Sat 10/10</option><option value="34">Sun 11/10</option></select>
+        <span class="sub">to</span><select id="offTo"><option value="0">Mon 7/9</option><option value="1">Tue 8/9</option><option value="2">Wed 9/9</option><option value="3">Thu 10/9</option><option value="4">Fri 11/9</option><option value="5">Sat 12/9</option><option value="6">Sun 13/9</option><option value="7">Mon 14/9</option><option value="8">Tue 15/9</option><option value="9">Wed 16/9</option><option value="10">Thu 17/9</option><option value="11">Fri 18/9</option><option value="12">Sat 19/9</option><option value="13">Sun 20/9</option><option value="14">Mon 21/9</option><option value="15">Tue 22/9</option><option value="16">Wed 23/9</option><option value="17">Thu 24/9</option><option value="18">Fri 25/9</option><option value="19">Sat 26/9</option><option value="20">Sun 27/9</option><option value="21">Mon 28/9</option><option value="22">Tue 29/9</option><option value="23">Wed 30/9</option><option value="24">Thu 1/10</option><option value="25">Fri 2/10</option><option value="26">Sat 3/10</option><option value="27">Sun 4/10</option><option value="28">Mon 5/10</option><option value="29">Tue 6/10</option><option value="30">Wed 7/10</option><option value="31">Thu 8/10</option><option value="32">Fri 9/10</option><option value="33">Sat 10/10</option><option value="34">Sun 11/10</option></select>
+        <button class="btn sec" onclick="addOff()">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-shifts">
+    <div class="card">
+      <h3>Shift lengths</h3>
+      <div class="hint">Change start/end times if shift lengths change. For Day and Evening you can list alternatives separated by commas — the first is the default the generator uses; the others become options you can switch to on any cell of the timetable.</div>
+      <table><tbody>
+        <tr><td style="width:150px">Day shift</td><td><input class="t" id="s_mix" value="8:00-16:00, 8:00-14:00, 7:00-14:00"></td><td class="sub">the day-shift options — one each; the 7-start is the early person / opener</td></tr>
+        <tr><td>Evening shift</td><td><input class="t" id="s_eve" value="16:00-22:00, 16:00-21:00"></td><td class="sub">standard + shorter option</td></tr>
+        <tr><td>Night shift</td><td><input class="t" id="s_night" value="22:00-08:00"></td><td class="sub">night staff only</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <h3>Coverage — people needed per shift, per day</h3>
+      <div class="hint">Set a different number on specific days (e.g. 5 on evenings for Friday and Tuesday). Night is always 1.</div>
+      <table style="table-layout:fixed"><thead><tr><th style="width:74px">Shift</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead><tbody>
+        <tr><td>Day</td><td><input class="num" id="covDay_0"></td><td><input class="num" id="covDay_1"></td><td><input class="num" id="covDay_2"></td><td><input class="num" id="covDay_3"></td><td><input class="num" id="covDay_4"></td><td><input class="num" id="covDay_5"></td><td><input class="num" id="covDay_6"></td></tr>
+        <tr><td>Evening</td><td><input class="num" id="covEve_0"></td><td><input class="num" id="covEve_1"></td><td><input class="num" id="covEve_2"></td><td><input class="num" id="covEve_3"></td><td><input class="num" id="covEve_4"></td><td><input class="num" id="covEve_5"></td><td><input class="num" id="covEve_6"></td></tr>
+        <tr><td>Night</td><td colspan="7" class="sub">1 (night staff), every day</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="panel" id="p-rules">
+    <div class="card">
+      <h3>Hours &amp; coefficients</h3>
+      <div class="hint">Full-time hours and how evening/weekend/night hours convert to “normalized” hours for the balance math. The evening × is applied per hour, not per shift: only the hours from the cut-off onward earn it. Whatever the shift, only its hours past 17:00 are counted — so a short evening works out on its own, no special case needed. 16:00–22:00 = 1 plain + 5 × 1.05 = 6.25 · 16:00–21:00 = 1 plain + 4 × 1.05 = 5.20 · 14:00–22:00 = 3 plain + 5 × 1.05 = 8.25.</div>
+      <div class="grid">
+        <div class="stat"><div class="l">100% = h / week</div><div class="v"><input class="num" id="baseWk" value="36"></div></div>
+        <div class="stat"><div class="l">Evening × (vægi)</div><div class="v"><input class="num" id="vEve" value="1.05"></div></div>
+        <div class="stat"><div class="l">Evening × applies from</div><div class="v"><input class="num" id="eveFrom" value="17">:00</div></div>
+        <div class="stat"><div class="l">Weekend day ×</div><div class="v"><input class="num" id="vWknd" value="1.05"></div></div>
+        <div class="stat"><div class="l">Night ×</div><div class="v"><input class="num" id="vNight" value="1.2"></div></div>
+        <div class="stat"><div class="l">Red day × (all hours)</div><div class="v"><input class="num" id="vRed" value="1.05"></div></div>
+        <div class="stat"><div class="l">Balance band ±</div><div class="v"><input class="num" id="band" value="5"> h</div></div>
+      </div>
+      <div style="margin-top:10px"><span class="sub">Red days (Icelandic public holidays) — comma-separated dates, e.g. 2026-12-25, 2026-12-26. On these, every hour counts at the red-day × — day and evening alike, and the whole shift, not just the part after 17:00. Night shifts keep the night × instead.</span><br><input id="redDays" class="t" style="width:340px;margin-top:4px" value="2026-01-01, 2026-04-02, 2026-04-03, 2026-04-05, 2026-04-06, 2026-04-23, 2026-05-01, 2026-05-14, 2026-05-24, 2026-05-25, 2026-06-17, 2026-08-03, 2026-12-24, 2026-12-25, 2026-12-26, 2026-12-31, 2027-01-01, 2027-03-25, 2027-03-26, 2027-03-28, 2027-03-29, 2027-04-22, 2027-05-01, 2027-05-06, 2027-05-16, 2027-05-17, 2027-06-17, 2027-08-02, 2027-12-24, 2027-12-25, 2027-12-26, 2027-12-31" placeholder="2026-12-25, 2026-12-26, 2027-01-01"></div>
+    </div>
+    <div class="card">
+      <h3>Structural rules</h3>
+      <div class="hint">Everything the generator enforces, in one place. The switches are the rules you can turn off; below them are the ones that are always on, and the pay coefficients that decide who gets picked first.</div>
+
+      <div class="rulehead">Cover — who has to be on the floor</div>
+      <div class="rulelist">
+        <label><input type="checkbox" id="rSup" checked=""> One supervisor on the floor each weekday, alternating weekends</label>
+        <label><input type="checkbox" id="rNight" checked=""> Always one night person (night-capable staff only)</label>
+        <label><input type="checkbox" id="rOpen" checked=""> One 7:00 opener each weekday</label>
+        <label><input type="checkbox" id="rOpenRot" checked=""> Rotate the 7:00 opener across morning staff (not the same person two days running)</label>
+      </div>
+
+      <div class="rulehead">Rest — what protects the person</div>
+      <div class="rulelist">
+        <label><input type="checkbox" id="rRest" checked=""> 11h rest: after an evening, avoid a next-day morning (never the 7:00 opener); if unavoidable, end that evening at 21:00</label>
+        <label><input type="checkbox" id="rStreak" checked=""> Hard limit: max 5 shifts in a row, then a day off</label>
+        <label><input type="checkbox" id="rMonWe" checked=""> Monday after a worked weekend goes to someone else first (yields if the day would otherwise be short)</label>
+      </div>
+
+      <div class="rulehead">Weekends</div>
+      <div class="rulelist">
+        <label><input type="checkbox" id="rWePair" checked=""> A weekend is always both days — nobody is put on Saturday alone or Sunday alone</label>
+        <label><input type="checkbox" id="rFriWe" checked=""> Friday evening goes to that weekend's people first (yields if the evening would otherwise be short)</label>
+      </div>
+
+      <div class="rulehead">Always on — not switchable</div>
+      <ul class="ruleul">
+        <li><b>A fixed pattern is copied exactly</b> and repeats every 14 days. Pattern people are exempt from the streak, Friday and Monday rules above — their pattern is the agreement. Add <b>fill</b> to a pattern and their remaining days get auto-scheduled under the normal rules.</li>
+        <li><b>Nobody is scheduled during booked time off</b> — holiday or temporary end, from the Time off tab.</li>
+        <li><b>Only shift types a person can work</b> — the Day / Eve / Night chips — and never on a weekday they have blocked under “No day” or “No eve”.</li>
+        <li><b>Weekend groups are honoured.</b> A person's Wknd days (e.g. 6,7 or 13,14) are the weekends they work; leave it blank and they auto-alternate between the two.</li>
+        <li><b>Daily cover comes from the Coverage table</b> — a separate day and evening target per weekday. Night is always 1.</li>
+        <li><b>The boss is off-floor</b> and never counts towards cover.</li>
+        <li><b>Whoever is furthest below their contracted hours is picked first</b>, measured in normalized hours inside the pay window — so the rota and the balance stay in step.</li>
+      </ul>
+
+      <div class="rulehead">Pay coefficients — set in “Hours &amp; coefficients” above</div>
+      <ul class="ruleul">
+        <li><b>Night ×1.20</b> for the whole shift, on any day — a night on a red day or a weekend is still just the night ×.</li>
+        <li><b>Red day ×1.05 for every hour</b>, day or evening alike, and the whole shift — not only the part after 17:00.</li>
+        <li><b>Weekend ×1.05 for every hour</b>, the same way.</li>
+        <li><b>Evening ×1.05 on the hours from 17:00 onward</b>, not on the whole shift, on an ordinary weekday. Every evening loses its 16:00–17:00 hour from the ×, however long or short it is:<ul class="ruleul" style="margin-top:4px"><li>16:00–22:00 &rarr; 1 plain + 5 × 1.05 = <b>6.25</b> (not 6.30)</li><li>16:00–21:00 &rarr; 1 plain + 4 × 1.05 = <b>5.20</b> — the shortened evening the 11h-rest rule creates</li><li>14:00–22:00 &rarr; 3 plain + 5 × 1.05 = <b>8.25</b></li><li>17:00–22:00 &rarr; nothing to deduct, all 5 hours at 1.05 = <b>5.25</b></li></ul></li>
+        <li><b>Balance band ±5h</b> — inside that, a person reads as “on track”.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel on" id="p-out">
+    <div id="checks"></div>
+    <div class="card"><h3>Generated timetable</h3>
+      <div id="ttTitle" style="font-weight:800;font-size:16px;color:var(--ink);margin-bottom:2px">September 2026 rota  ·  11 Sep – 10 Oct 2026</div>
+      <div class="tt" id="ttGrid"></div>
+      <div class="legend"><span><span class="sw c-day"></span>Day</span><span><span class="sw c-eve"></span>Evening</span><span><span class="sw c-night"></span>Night</span><span><span class="sw wecell"></span>Weekend</span></div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn" onclick="downloadXLS()">Download Excel</button>
+        <button class="btn" onclick="closeMonthPreview()">Close month &amp; start next ▸</button>
+      </div>
+    </div>
+    <div class="card"><h3>Hours &amp; contract check</h3><div id="audit"></div></div>
+  </div>
+  <div class="panel" id="p-arch">
+    <div class="card">
+      <h3>Closed months</h3>
+      <div class="hint">Every month you close is kept here in full — the timetable, the hours audit, and the staff list and coefficients exactly as they were at the time. Nothing here is ever changed by later edits, so an old month always reprints the way it was agreed.</div>
+      <div id="archList" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modalwrap" hidden>
+  <div class="modalbox">
+    <h3 id="modalTitle" style="margin:0 0 8px"></h3>
+    <div id="modalBody"></div>
+    <div class="modalbtns">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn" id="modalOk"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DN_EN=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DN_IS=['Mán','Þri','Mið','Fim','Fös','Lau','Sun'];
+const MN_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MN_IS=['jan','feb','mar','apr','maí','jún','júl','ágú','sep','okt','nóv','des'];
+const ML_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const ML_IS=['janúar','febrúar','mars','apríl','maí','júní','júlí','ágúst','september','október','nóvember','desember'];
+let DN=DN_IS,MN=MN_IS,ML=ML_IS;
+/* Month names are spelled out everywhere a date is shown, so "7/9" can never be
+   read as 9 July on one computer and 7 September on another. */
+const REDDAYS='2026-01-01, 2026-04-02, 2026-04-03, 2026-04-05, 2026-04-06, 2026-04-23, 2026-05-01, 2026-05-14, 2026-05-24, 2026-05-25, 2026-06-17, 2026-08-03, 2026-12-24, 2026-12-25, 2026-12-26, 2026-12-31, 2027-01-01, 2027-03-25, 2027-03-26, 2027-03-28, 2027-03-29, 2027-04-22, 2027-05-01, 2027-05-06, 2027-05-16, 2027-05-17, 2027-06-17, 2027-08-02, 2027-12-24, 2027-12-25, 2027-12-26, 2027-12-31';
+function demo(){return{
+ staff:[{"n": "Hanna", "role": "boss", "pct": 100, "can": "day", "pat": "1:8-16, 2:8-16, 3:8-16, 4:8-16, 5:Stytting, 8:8-16, 9:8-16, 10:8-16, 11:8-16, 12:8-16", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Ólöf", "role": "supervisor", "pct": 100, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Kári", "role": "supervisor", "pct": 90, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Bjarki", "role": "floor", "pct": 90, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Signý", "role": "floor", "pct": 80, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Tómas", "role": "floor", "pct": 80, "can": "day,eve", "noday": "Thu", "wknd": "13,14", "noeve": "", "pat": "", "bal": 0}, {"n": "Rósa", "role": "floor", "pct": 50, "can": "eve", "pat": "2:16:00-22:00, 4:16:00-22:00, 9:16:00-22:00, 11:16:00-22:00, 13:16:00-22:00, 14:16:00-22:00", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Daniel", "role": "floor", "pct": 100, "can": "night", "pat": "1:22:00-08:00, 2:22:00-08:00, 3:22:00-08:00, 12:22:00-08:00, 13:22:00-08:00, 14:22:00-08:00", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Ewa", "role": "floor", "pct": 80, "can": "night,eve", "noday": "", "noeve": "", "wknd": "", "pat": "", "bal": 0}, {"n": "Hilmar", "role": "floor", "pct": 70, "can": "night", "pat": "6:22:00-08:00, 7:22:00-08:00, 8:22:00-08:00, 9:22:00-08:00", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Agnes", "role": "floor", "pct": 80, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Luis", "role": "floor", "pct": 70, "can": "eve,day", "noday": "Mon,Wed", "wknd": "13,14", "noeve": "", "pat": "", "bal": 0}, {"n": "Íris", "role": "floor", "pct": 60, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Maja", "role": "floor", "pct": 70, "can": "day,eve", "noeve": "Fri", "wknd": "13,14", "noday": "", "pat": "", "bal": 0}, {"n": "Stefán", "role": "floor", "pct": 40, "can": "eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Halla", "role": "floor", "pct": 40, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Oskar", "role": "floor", "pct": 80, "can": "day,eve", "pat": "1:8:00-16:00, 2:8:00-16:00, 5:16:00-22:00, 6:8:00-16:00, 7:8:00-16:00, 9:16:00-22:00, 10:16:00-22:00, fill", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Priya", "role": "floor", "pct": 40, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Vala", "role": "floor", "pct": 40, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Jón Ari", "role": "floor", "pct": 30, "can": "eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0} ],
+ off:[{"who": "Agnes", "type": "holiday", "f": "2026-09-21", "t": "2026-09-25"}],
+ cfg:{s_day:'8:00-16:00, 8:00-14:00, 8:00-13:00',s_mix:'8:00-16:00, 8:00-14:00, 7:00-14:00',s_eve:'16:00-22:00, 16:00-21:00',s_night:'22:00-08:00',
+   covDay:[3,3,3,3,3,4,4],covEve:[5,5,5,5,5,4,4],baseWk:36,vEve:1.05,eveFrom:17,anchor:'2026-09-07',lang:'en',vWknd:1.05,vNight:1.2,band:5,vRed:1.05,redDays:REDDAYS,rSup:true,rOpen:true,rNight:true,rRest:true,rStreak:true,rOpenRot:true,rFriWe:true,rMonWe:true,rWePair:true,pStart:'2026-09-07',pWeeks:5,countFrom:'2026-09-11',countTo:'2026-10-10',ver:'2026-09-03i'}
+};}
+let BAKED={"staff": [{"n": "Hanna", "role": "boss", "pct": 100, "can": "day", "pat": "1:8-16, 2:8-16, 3:8-16, 4:8-16, 5:Stytting, 8:8-16, 9:8-16, 10:8-16, 11:8-16, 12:8-16", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Ólöf", "role": "supervisor", "pct": 100, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Kári", "role": "supervisor", "pct": 90, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Bjarki", "role": "floor", "pct": 90, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Signý", "role": "floor", "pct": 80, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Tómas", "role": "floor", "pct": 80, "can": "day,eve", "noday": "Thu", "wknd": "13,14", "noeve": "", "pat": "", "bal": 0}, {"n": "Rósa", "role": "floor", "pct": 50, "can": "eve", "pat": "2:16:00-22:00, 4:16:00-22:00, 9:16:00-22:00, 11:16:00-22:00, 13:16:00-22:00, 14:16:00-22:00", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Daniel", "role": "floor", "pct": 100, "can": "night", "pat": "1:22:00-08:00, 2:22:00-08:00, 3:22:00-08:00, 12:22:00-08:00, 13:22:00-08:00, 14:22:00-08:00", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Ewa", "role": "floor", "pct": 80, "can": "night,eve", "noday": "", "noeve": "", "wknd": "", "pat": "", "bal": 0}, {"n": "Hilmar", "role": "floor", "pct": 70, "can": "night", "pat": "6:22:00-08:00, 7:22:00-08:00, 8:22:00-08:00, 9:22:00-08:00", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Agnes", "role": "floor", "pct": 80, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Luis", "role": "floor", "pct": 70, "can": "eve,day", "noday": "Mon,Wed", "wknd": "13,14", "noeve": "", "pat": "", "bal": 0}, {"n": "Íris", "role": "floor", "pct": 60, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Maja", "role": "floor", "pct": 70, "can": "day,eve", "noeve": "Fri", "wknd": "13,14", "noday": "", "pat": "", "bal": 0}, {"n": "Stefán", "role": "floor", "pct": 40, "can": "eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Halla", "role": "floor", "pct": 40, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Oskar", "role": "floor", "pct": 80, "can": "day,eve", "pat": "1:8:00-16:00, 2:8:00-16:00, 5:16:00-22:00, 6:8:00-16:00, 7:8:00-16:00, 9:16:00-22:00, 10:16:00-22:00, fill", "noday": "", "noeve": "", "wknd": "", "bal": 0}, {"n": "Priya", "role": "floor", "pct": 40, "can": "day,eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Vala", "role": "floor", "pct": 40, "can": "day,eve", "wknd": "13,14", "noday": "", "noeve": "", "pat": "", "bal": 0}, {"n": "Jón Ari", "role": "floor", "pct": 30, "can": "eve", "wknd": "6,7", "noday": "", "noeve": "", "pat": "", "bal": 0}], "off": [{"who": "Agnes", "type": "holiday", "f": "2026-09-21", "t": "2026-09-25"}], "cfg": {"s_day": "8:00-16:00, 8:00-14:00, 8:00-13:00", "s_mix": "8:00-16:00, 8:00-14:00, 7:00-14:00", "s_eve": "16:00-22:00, 16:00-21:00", "s_night": "22:00-08:00", "covDay": [3, 3, 3, 3, 3, 4, 4], "covEve": [5, 5, 5, 5, 5, 4, 4], "baseWk": 36, "vEve": 1.05, "vWknd": 1.05, "vNight": 1.2, "band": 5, "vRed": 1.05, "redDays": "2026-01-01, 2026-04-02, 2026-04-03, 2026-04-05, 2026-04-06, 2026-04-23, 2026-05-01, 2026-05-14, 2026-05-24, 2026-05-25, 2026-06-17, 2026-08-03, 2026-12-24, 2026-12-25, 2026-12-26, 2026-12-31, 2027-01-01, 2027-03-25, 2027-03-26, 2027-03-28, 2027-03-29, 2027-04-22, 2027-05-01, 2027-05-06, 2027-05-16, 2027-05-17, 2027-06-17, 2027-08-02, 2027-12-24, 2027-12-25, 2027-12-26, 2027-12-31", "rSup": true, "rOpen": true, "rNight": true, "rRest": true, "rStreak": true, "rWe14": true, "rOpenRot": true, "pStart": "2026-09-07", "pWeeks": 5, "countFrom": "2026-09-11", "countTo": "2026-10-10", "ver": "demo-2026-09-27", "lang": "en"}};//BAKESLOT
+let D=demo();
+
+function hrs(s){if(!s||s.indexOf('-')<0)return 0;let[a,b]=s.split('-');const m=t=>{let[h,mi]=t.split(':');return +h+ +(mi||0)/60};let st=m(a),en=m(b);if(en<=st)en+=24;return en-st;}
+function cat(s){let st=parseInt(s);if(st>=22||st<6)return'night';if(st>=14)return'eve';return'day';}
+function C(){return D.cfg;}
+function startHr(s){if(!s)return 0;const t=s.split('-')[0].trim();const[h,mi]=t.split(':');return +h+ +(mi||0)/60;}
+/* Normalized hours for the balance math. A night takes the night x for the whole shift.
+   Otherwise a red day takes the red x for EVERY hour, day or evening alike, and a weekend
+   takes the weekend x the same way. Only on an ordinary weekday is the shift split: the
+   hours from the evening cut-off (17:00) onward earn the evening x, the earlier ones don't. */
+function norm(s,we,red){const h=hrs(s),c=cat(s),g=C();
+  if(c==='night')return h*(+g.vNight||1.2);
+  if(red)return h*(+g.vRed||1.05);
+  if(we)return h*(+g.vWknd||1.05);
+  const st=startHr(s),en=st+h,cut=(g.eveFrom==null?17:+g.eveFrom);
+  const late=Math.max(0,en-Math.max(st,cut));
+  return (h-late)+late*(+g.vEve||1.05);}
+function parsePat(str){const o={};(str||'').split(',').forEach(p=>{p=p.trim();if(!p)return;const k=p.indexOf(':');const idx=(+p.slice(0,k))-1;const val=p.slice(k+1).trim();if(!isNaN(idx)&&val)o[idx]=val;});return o;}
+function hasPat(s){for(const _ in parsePat(s.pat))return true;return false;}
+function hasFill(s){return /(^|,)\s*fill\b/i.test(s.pat||'');}
+function migrateRoles(){(D.staff||[]).forEach(s=>{if(s.role==='keep')s.role='floor';});}
+function migrateWknd(){(D.staff||[]).forEach(s=>{const w=(s.wknd||'').toLowerCase();if(w==='pink')s.wknd='6,7';else if(w==='blue')s.wknd='13,14';});}
+function migrateLegacySun(){} // demo: removed
+function migrateOffDates(){ // one-time: time off used to be stored as day numbers, which drift when the period moves
+  if(!(D.off||[]).some(o=>typeof o.f==='number'||typeof o.t==='number'))return;
+  const days=periodDays();
+  D.off.forEach(o=>{['f','t'].forEach(k=>{if(typeof o[k]==='number')o[k]=(days[o[k]]||days[0]||{iso:''}).iso;});});
+}
+function migratePrefs(){} // demo: workplace-specific defaults removed
+function parseRules(str){const nd=[];let only=null;(str||'').split(',').forEach(p=>{p=p.trim().toLowerCase();if(p.indexOf('no:')===0){const idx=['mon','tue','wed','thu','fri','sat','sun'].indexOf(p.slice(3).trim().slice(0,3));if(idx>=0)nd.push(idx);}else if(p.indexOf('only:')===0){const t=p.slice(5).trim();if(t.indexOf('eve')===0)only='eve';else if(t.indexOf('day')===0)only='day';}});return{noDays:nd,only};}
+function firstShift(str,fallback){const v=(str||'').split(',')[0].trim();return v||fallback;}
+
+let sched={},DATES=[],isWE=[],isRed=[];
+/* Time off is stored as real dates so it stays put when the period moves. This turns one
+   entry into day indexes inside the current window, or null if it falls entirely outside.
+   Plain numbers are still accepted, for setups saved before the switch. */
+function offRange(o){
+  if(!DATES.length||!o)return null;
+  const ix=v=>{if(typeof v==='number')return v;const d=new Date(String(v)+'T00:00:00');return isNaN(d)?NaN:Math.round((d-DATES[0])/86400000);};
+  let f=ix(o.f),t=ix(o.t);
+  if(isNaN(f)||isNaN(t))return null;
+  if(t<f){const w=f;f=t;t=w;}
+  if(t<0||f>DATES.length-1)return null;
+  return {f:Math.max(0,f),t:Math.min(DATES.length-1,t)};
+}
+function generate(){
+  readInputs();
+  try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(e){}
+  try{
+  const g=C();
+  const _pf=new Date((g.countFrom||g.pStart||'2026-09-07')+'T00:00:00'),_pt=new Date((g.countTo||g.countFrom||'2026-10-10')+'T00:00:00');
+  const d0=new Date(_pf);d0.setDate(d0.getDate()-((d0.getDay()+6)%7));
+  const _es=new Date(_pt);_es.setDate(_es.getDate()+(6-((_pt.getDay()+6)%7)));
+  const N=Math.max(7,Math.round((_es-d0)/86400000)+1);
+  g.pStart=d0.getFullYear()+'-'+String(d0.getMonth()+1).padStart(2,'0')+'-'+String(d0.getDate()).padStart(2,'0');g.pWeeks=Math.round(N/7);
+  DATES=[];for(let i=0;i<N;i++){const d=new Date(d0);d.setDate(d.getDate()+i);DATES.push(d);}
+  isWE=DATES.map(d=>d.getDay()===0||d.getDay()===6);
+  {const rs=new Set((g.redDays||'').split(',').map(x=>x.trim()).filter(Boolean));isRed=DATES.map(d=>rs.has(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')));}
+  const wd=i=>(DATES[i].getDay()+6)%7;   // Mon=0 .. Sun=6
+  /* Which day of the fortnight a date is (0..13) — measured from a FIXED anchor Monday,
+     not from the start of whatever range is being generated. Without this, two periods that
+     begin an odd number of weeks apart silently invert everyone's fortnight: fixed Saturdays
+     land on the wrong weekend and the 6,7 / 13,14 weekend groups swap over. */
+  const _anch=new Date((g.anchor||'2026-09-07')+'T00:00:00');
+  const fnIdx=i=>((Math.round((DATES[i]-_anch)/86400000)%14)+14)%14;
+  const dayDef=firstShift(g.s_mix,'8:00-16:00'), eveDef=firstShift(g.s_eve,'16:00-22:00'), nightDef=firstShift(g.s_night,'22:00-08:00');
+  const staff=D.staff;
+  const off=(D.off||[]).map(o=>{const r=offRange(o);return r?{who:o.who,type:o.type,f:r.f,t:r.t}:null;}).filter(Boolean);
+  const rules={};staff.forEach(s=>rules[s.n]=parseRules(s.pat));
+  const wdName=['mon','tue','wed','thu','fri','sat','sun'];
+  const dayMatch=(sel,w)=>{sel=(sel||'').toLowerCase();if(!sel)return false;for(const t of sel.split(',').map(x=>x.trim()).filter(Boolean)){if(t==='all')return true;if(t==='weekdays'&&w<5)return true;if(t==='weekends'&&w>=5)return true;if(wdName.indexOf(t.slice(0,3))===w)return true;}return false;};
+  const exclDay=(s,i)=>{const w=wd(i);if(dayMatch(s.noday,w))return true;const r=rules[s.n]||{noDays:[]};if(r.noDays.indexOf(w)>=0)return true;if(r.only==='eve'&&w<5)return true;return false;};
+  const exclEve=(s,i)=>{const w=wd(i);if(dayMatch(s.noeve,w))return true;const r=rules[s.n]||{noDays:[]};if(r.noDays.indexOf(w)>=0)return true;if(r.only==='day'&&w<5)return true;return false;};
+  const wkDaysOf=s=>((s.wknd||'').match(/\d+/g)||[]).map(Number);
+  const wkOK=(s,i)=>{if(!isWE[i])return true;const nums=wkDaysOf(s);if(!nums.length)return true;return nums.includes(fnIdx(i)+1);};
+  const avail=(n,i)=>!off.some(o=>o.who===n&&i>=o.f&&i<=o.t);
+  sched={};staff.forEach(s=>sched[s.n]={});
+  const S=(n,i,v)=>sched[n][i]=v;const working=(n,i)=>i in sched[n];
+  const cc=(c,i)=>staff.filter(s=>s.role!=='boss'&&working(s.n,i)&&cat(sched[s.n][i])===c).length;
+  const can=(s,t)=>s.can.split(',').map(x=>x.trim()).includes(t);
+  const evePrev=(n,i)=>i>0&&sched[n]&&sched[n][i-1]&&cat(sched[n][i-1])==='eve'; // worked an evening the day before
+  const startsAt=(i,h)=>staff.some(s=>{const v=sched[s.n][i];return v&&parseInt(v)===h;}); // is anyone already on that start hour
+  const runBefore=(n,i)=>{let c=0;for(let j=i-1;j>=0&&sched[n]&&sched[n][j];j--)c++;return c;}; // consecutive worked days ending at i-1
+  const runAround=(n,i)=>{let c=1;for(let j=i-1;j>=0&&sched[n]&&sched[n][j];j--)c++;for(let j=i+1;j<N&&sched[n]&&sched[n][j];j++)c++;return c;}; // block length if a shift is placed at i
+  const runAfter=(n,i)=>{let c=0;for(let j=i+1;j<N&&sched[n]&&sched[n][j];j++)c++;return c;};
+  // Friday evening belongs to the people who are also on that weekend (Sat i+1 / Sun i+2).
+  const friEveBlocked=(n,i)=>{if(wd(i)!==4)return false;const sa=i+1,su=i+2;return !((sa<N&&sched[n]&&sched[n][sa])||(su<N&&sched[n]&&sched[n][su]));};
+  // Nobody starts the week on the Monday straight after a weekend they worked (Sun i-1 / Sat i-2).
+  const monAfterWE=(n,i)=>wd(i)===0&&i>=2&&!!((sched[n]&&sched[n][i-1])||(sched[n]&&sched[n][i-2]));
+  staff.filter(s=>hasPat(s)).forEach(s=>{const p=parsePat(s.pat);for(let i=0;i<N;i++){const k=fnIdx(i);if(!(k in p)||!avail(s.n,i))continue;const v=p[k],c=cat(v);if(c==='day'&&exclDay(s,i))continue;if(c==='eve'&&exclEve(s,i))continue;S(s.n,i,v);}});
+  const sups=staff.filter(s=>s.role==='supervisor'&&!hasPat(s));
+  if(g.rSup&&sups.length){let a=0,b=0;
+    const okSup=(s,i)=>avail(s.n,i)&&!working(s.n,i)&&!(g.rStreak&&runAround(s.n,i)>=6)&&!(g.rMonWe&&monAfterWE(s.n,i));
+    for(let i=0;i<N;i++){
+      if(isWE[i]){ // weekend: honour each supervisor's Pink/Blue group; fall back to round-robin if none set/available
+        let pool=sups.filter(x=>wkOK(x,i)&&okSup(x,i));if(!pool.length)pool=sups.filter(x=>okSup(x,i));
+        if(pool.length)S(pool[b%pool.length].n,i,dayDef);
+        if(DATES[i].getDay()===0)b++;
+      } else { let s=sups[a%sups.length];if(!okSup(s,i)){const alt=sups.find(x=>okSup(x,i));if(alt)s=alt;}if(okSup(s,i))S(s.n,i,dayDef);a++; }
+    }}
+  if(g.rNight)for(let i=0;i<N;i++){if(cc('night',i)===0){let c=staff.find(s=>can(s,'night')&&s.role==='floor'&&!hasPat(s)&&!working(s.n,i)&&avail(s.n,i))||staff.find(s=>can(s,'night')&&!hasPat(s)&&!working(s.n,i)&&avail(s.n,i));if(c)S(c.n,i,nightDef);}}
+  // fairness measured on the SAME yardstick the audit shows: normalized hours inside the pay window
+  const _cFg=new Date((g.countFrom||g.pStart)+'T00:00:00'),_cTg=new Date((g.countTo||g.pStart)+'T00:00:00');
+  const _cDg=Math.round((_cTg-_cFg)/86400000)+1;
+  const inWinI=i=>DATES[i]>=_cFg&&DATES[i]<=_cTg;
+  const quota=n=>{const s=staff.find(x=>x.n===n);return s.pct/100*(+g.baseWk||36)*_cDg/7;};
+  const aim=n=>{const s=staff.find(x=>x.n===n);return Math.max(0,quota(n)-s.bal);};
+  const worked=n=>Object.entries(sched[n]).reduce((a,[i,v])=>a+(inWinI(+i)?norm(v,isWE[+i],isRed[+i]):0),0);
+  const isSup=n=>staff.find(s=>s.n===n).role==='supervisor';
+  const mixList=(g.s_mix||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const earlyH=Math.min(...mixList.map(s=>parseInt(s)));
+  const openedYest=(n,i)=>i>0&&sched[n]&&sched[n][i-1]&&parseInt(sched[n][i-1])===earlyH&&cat(sched[n][i-1])==='day';
+  const openerCnt=n=>Object.values(sched[n]||{}).filter(v=>parseInt(v)===earlyH&&cat(v)==='day').length;
+  const dpool=(i,slot)=>{let p=staff.filter(s=>!working(s.n,i)&&avail(s.n,i)&&s.role!=='boss'&&!(hasPat(s)&&!hasFill(s))&&!(isSup(s.n)&&slot==='day')&&can(s,slot)&&!(slot==='day'&&exclDay(s,i))&&!(slot==='eve'&&exclEve(s,i))&&wkOK(s,i)&&!(g.rStreak&&runAround(s.n,i)>=6));
+    if(g.rMonWe){const mw=p.filter(s=>!monAfterWE(s.n,i));if(mw.length)p=mw;}
+    /* Friday evening goes to that weekend's people FIRST, but never at the cost of leaving
+       the evening short — if nobody on the weekend is free, anyone available may take it,
+       and the checks panel names every Friday where the rule had to bend. */
+    if(g.rFriWe&&slot==='eve'){const fw=p.filter(s=>!friEveBlocked(s.n,i));if(fw.length)p=fw;}const u=p.filter(s=>worked(s.n)<aim(s.n));if(u.length)p=u;return p.sort((a,b)=>{const pen=x=>((g.rStreak&&runAround(x.n,i)>=5)?2:0)+((g.rRest&&slot==='day'&&evePrev(x.n,i))?1:0);const ra=pen(a),rb=pen(b);if(ra!==rb)return ra-rb;const pa=(isSup(a.n)&&slot==='eve'&&worked(a.n)<aim(a.n))?0:1,pb=(isSup(b.n)&&slot==='eve'&&worked(b.n)<aim(b.n))?0:1;if(pa!==pb)return pa-pb;return (worked(a.n)/Math.max(aim(a.n),1))-(worked(b.n)/Math.max(aim(b.n),1));});};
+  // flexible floor staff (no fixed pattern) rotate weekends: pink = 1st/3rd/5th, blue = 2nd/4th; unset ones auto-alternate
+  const flex=staff.filter(s=>s.role==='floor'&&!hasPat(s));
+  const dnum=d=>fnIdx(d)+1;const wkHas=(s,d)=>wkDaysOf(s).includes(dnum(d));
+  const weShf=(slot,d)=>slot==='day'?dayDef:eveDef;
+  const weTg=(slot,d)=>slot==='day'?(+g.covDay[wd(d)]||0):(+g.covEve[wd(d)]||0);
+  const weOk=(s,slot,d)=>!working(s.n,d)&&avail(s.n,d)&&!(slot==='day'&&exclDay(s,d))&&!(slot==='eve'&&exclEve(s,d))&&can(s,slot);
+  const weSrt=(list,slot,d0)=>{const uw=list.filter(s=>worked(s.n)<aim(s.n));if(uw.length)list=uw;return list.sort((a,b)=>{const pen=x=>((g.rStreak&&runBefore(x.n,d0)>=4)?2:0)+((g.rRest&&slot==='day'&&evePrev(x.n,d0))?1:0);const ra=pen(a),rb=pen(b);if(ra!==rb)return ra-rb;return (worked(a.n)/Math.max(aim(a.n),1))-(worked(b.n)/Math.max(aim(b.n),1));});};
+  const autoG={};let agi=0;flex.forEach(s=>{if(!wkDaysOf(s).length){autoG[s.n]=(agi%2===0)?6:13;agi++;}});
+  // WEEKEND pass: signed work their exact days; unsigned work BOTH days of their alternating weekend
+  for(let sa=0;sa<N;sa++){
+    if(!(isWE[sa]&&DATES[sa].getDay()===6))continue;
+    const su=(sa+1<N&&isWE[sa+1])?sa+1:-1;const days=su<0?[sa]:[sa,su];const sd=dnum(sa);
+    flex.filter(s=>wkDaysOf(s).length).forEach(s=>{
+      const myd=days.filter(d=>wkHas(s,d)&&!working(s.n,d)&&avail(s.n,d));if(!myd.length)return;
+      if(g.rStreak&&(myd.length===2?(runBefore(s.n,myd[0])+2+runAfter(s.n,myd[1]))>=6:runAround(s.n,myd[0])>=6))return;
+      myd.forEach(d=>{const o=['day','eve'].filter(slot=>can(s,slot)&&!(slot==='day'&&exclDay(s,d))&&!(slot==='eve'&&exclEve(s,d)));if(!o.length)return;o.sort((A,B)=>Math.max(0,weTg(B,d)-cc(B,d))-Math.max(0,weTg(A,d)-cc(A,d)));S(s.n,d,weShf(o[0],d));});
+    });
+    ['day','eve'].forEach(slot=>{
+      const pairFill=filt=>{let gd=0;while(su>=0&&cc(slot,sa)<weTg(slot,sa)&&cc(slot,su)<weTg(slot,su)&&gd++<40){let pool=weSrt(flex.filter(s=>!wkDaysOf(s).length&&filt(s)&&weOk(s,slot,sa)&&weOk(s,slot,su)&&!(g.rStreak&&(runBefore(s.n,sa)+2+runAfter(s.n,su))>=6)),slot,sa);if(!pool.length)break;const pk=pool[0];S(pk.n,sa,weShf(slot,sa));S(pk.n,su,weShf(slot,su));}};
+      pairFill(s=>autoG[s.n]===sd);
+      pairFill(s=>true);
+    });
+    /* Whoever comes in on a weekend works BOTH days. This top-up pass therefore prefers
+       someone who is free on the partner day too and books them for the pair. A single
+       weekend day is only used when nobody can take both and the floor would otherwise be
+       short — and the checks panel names every person that happens to. */
+    ['day','eve'].forEach(slot=>{days.forEach(d=>{let gg=0;while(cc(slot,d)<weTg(slot,d)&&gg++<40){
+      const other=(su<0)?-1:(d===sa?su:sa);
+      let pool=weSrt(flex.filter(s=>weOk(s,slot,d)&&!(g.rStreak&&runAround(s.n,d)>=6)),slot,d);
+      if(!pool.length)break;
+      const pairOk=s=>other>=0&&weOk(s,slot,other)&&
+        !(g.rStreak&&(runBefore(s.n,Math.min(d,other))+2+runAfter(s.n,Math.max(d,other)))>=6);
+      const both=g.rWePair?pool.filter(pairOk):[];
+      const pk=(both.length?both:pool)[0];
+      S(pk.n,d,weShf(slot,d));
+      if(g.rWePair&&both.length&&!working(pk.n,other))S(pk.n,other,weShf(slot,other));
+    }});});
+  }
+  // Drop any Monday that follows a worked weekend, before the weekday fill runs — so the
+  // gap is offered to someone who was off. Fixed patterns are copied as given and stay put;
+  // the night person and the day's last supervisor are never removed, that would break a harder rule.
+  if(g.rMonWe){
+    const supOn=i=>staff.filter(x=>x.role==='supervisor'&&sched[x.n][i]).length;
+    for(const s of staff){
+      if(s.role==='boss')continue;
+      if(hasPat(s)&&!hasFill(s))continue;
+      for(let i=2;i<N;i++){
+        if(wd(i)!==0||!sched[s.n][i])continue;
+        if(!(sched[s.n][i-1]||sched[s.n][i-2]))continue;
+        if(cat(sched[s.n][i])==='night'&&cc('night',i)<=1)continue;
+        if(s.role==='supervisor'&&supOn(i)<=1)continue;
+        delete sched[s.n][i];
+      }
+    }
+    if(g.rNight)for(let i=0;i<N;i++){if(cc('night',i)===0){let c=staff.find(s=>can(s,'night')&&s.role==='floor'&&!hasPat(s)&&!working(s.n,i)&&avail(s.n,i))||staff.find(s=>can(s,'night')&&!hasPat(s)&&!working(s.n,i)&&avail(s.n,i));if(c)S(c.n,i,nightDef);}}
+  }
+  // WEEKDAY fill (weekends handled separately below)
+  for(let i=0;i<N;i++){
+    if(isWE[i])continue;
+    let mix=mixList.slice();if(!g.rOpen)mix=mix.filter(s=>parseInt(s)!==earlyH);
+    staff.forEach(s=>{if(s.role!=='boss'&&working(s.n,i)&&cat(sched[s.n][i])==='day'){const sh=sched[s.n][i];const idx=mix.indexOf(sh);if(idx>=0)mix.splice(idx,1);else{let rm=-1;for(let k=mix.length-1;k>=0;k--){if(parseInt(mix[k])!==earlyH){rm=k;break;}}if(rm>=0)mix.splice(rm,1);else if(mix.length)mix.pop();}}});
+    mix.sort((a,b)=>parseInt(a)-parseInt(b));
+    mix.forEach(shift=>{const isOp=parseInt(shift)===earlyH;if(isOp&&startsAt(i,earlyH))return;let p=dpool(i,'day');if(isOp&&g.rRest){const q=p.filter(s=>!evePrev(s.n,i));if(q.length)p=q;}if(isOp&&g.rOpenRot&&p.length)p=p.slice().sort((a,b)=>{const ya=openedYest(a.n,i)?1:0,yb=openedYest(b.n,i)?1:0;if(ya!==yb)return ya-yb;return openerCnt(a.n)-openerCnt(b.n);});if(p.length)S(p[0].n,i,shift);});
+    let eg=0;const et=+g.covEve[wd(i)]||0;while(cc('eve',i)<et&&eg++<40){const p=dpool(i,'eve');if(!p.length)break;S(p[0].n,i,eveDef);}
+  }
+  if(g.rRest){for(const s of staff){const fixed=hasPat(s)&&!hasFill(s)&&s.role!=='boss';if(fixed)continue;for(let i=1;i<N;i++){const pv=sched[s.n][i-1],cu=sched[s.n][i];if(pv&&cu&&cat(pv)==='eve'&&/-22:00$/.test(pv)&&cat(cu)==='day')sched[s.n][i-1]=pv.replace('-22:00','-21:00');}}}
+  render();document.querySelector('.tab[data-t=out]').click();
+  }catch(err){const el=document.getElementById('ttGrid');if(el)el.innerHTML='<p class="sub">Could not generate — '+err.message+'. Your data is safe; fix the input and try again.</p>';}
+}
+
+function shiftMenu(){const g=C();const mix=(g.s_mix||'').split(',').map(x=>x.trim()).filter(Boolean);const eve=g.s_eve.split(',').map(x=>x.trim()).filter(Boolean);
+  return ['',...mix,'8:00-13:00',...eve,firstShift(g.s_night,'22:00-08:00')].filter((v,i,a)=>a.indexOf(v)===i);}
+function editCell(td,n,i){if(td.querySelector('select'))return;const cur=sched[n]&&sched[n][i]||'';
+  td.innerHTML='<select style="width:100%;font-size:10px;padding:2px" onchange="setCell(this,\''+n.replace(/'/g,"\\'")+'\','+i+')">'+
+    shiftMenu().map(v=>'<option value="'+v+'"'+(v===cur?' selected':'')+'>'+(v===''?'— off —':fmtShift(v))+'</option>').join('')+'</select>';
+  td.querySelector('select').focus();}
+function setCell(sel,n,i){const v=sel.value;if(v==='')delete sched[n][i];else sched[n][i]=v;render();}
+function fmtShift(v){if(!v||v.indexOf(':')<0)return v||'';return v.split('-').map(x=>{const m=x.trim().match(/^(\d{1,2}):(\d{2})$/);if(!m)return x.trim();const h=String(+m[1]);return m[2]==='00'?h:h+':'+m[2];}).join('-');}
+
+/* The hours audit, calculated once and used by both the on-screen table and the month close —
+   so the balance carried into next month is exactly the number Aldis saw on screen. */
+function auditRows(){
+  const staff=D.staff,g=C();
+  if(!DATES.length)return [];
+  const cF=new Date((g.countFrom||g.pStart)+'T00:00:00'),cT=new Date((g.countTo||g.pStart)+'T00:00:00');
+  const inWin=i=>DATES[i]>=cF&&DATES[i]<=cT;
+  const wkH=(+g.baseWk||36),band=+g.band||5,countDays=Math.round((cT-cF)/86400000)+1;
+  return staff.map(s=>{
+    const nf=Object.entries(sched[s.n]||{}).reduce((x,[i,v])=>inWin(+i)?x+norm(v,isWE[+i],isRed[+i]):x,0);
+    let holH=0,teH=0;const byType={};const share=s.pct/100*wkH/7;
+    for(const o of (D.off||[])){if(o.who!==s.n)continue;const r=offRange(o);if(!r)continue;
+      for(let i=r.f;i<=r.t;i++){if(!inWin(i))continue;
+        byType[o.type]=(byType[o.type]||0)+share;
+        if(o.type==='temporary end')teH+=share;else holH+=share;}}
+    const q=s.pct/100*wkH*countDays/7-teH;const proj=(+s.bal||0)+(nf+holH-q);
+    let st,cls;
+    if(s.role==='boss'){st='boss (off-floor)';cls='';}
+    else if(Math.abs(proj)<=band){st='on track';cls='st-ok';}
+    else if(proj>band){st=t('over')+' '+proj.toFixed(0);cls='st-ov';}
+    else{st=t('under')+' '+(-proj).toFixed(0);cls='st-un';}
+    return {n:s.n,pct:s.pct,role:s.role,boss:s.role==='boss',bal:+s.bal||0,q,nf,holH,teH,proj,st,cls,byType};
+  });
+}
+function render(){
+  const staff=D.staff,g=C(),N=DATES.length;const _cF=new Date((g.countFrom||g.pStart)+'T00:00:00'),_cT=new Date((g.countTo||g.pStart)+'T00:00:00');const inWin=i=>DATES[i]>=_cF&&DATES[i]<=_cT;const wkTint=i=>isRed[i]?'wk-red':(isWE[i]?(Math.floor(i/7)%2===0?'wk-pink':'wk-blue'):'');
+  let h='<table><tr><th class="name">Staff</th>';
+  for(let i=0;i<N;i++)h+=`<th class="${wkTint(i)} ${inWin(i)?'':'outwin'}">${DATES[i].getDate()} ${DN[(DATES[i].getDay()+6)%7]}</th>`;
+  h+='</tr>';
+  for(const s of staff){const isBoss=s.role==='boss';h+=`<tr><td class="name">${s.n}</td>`;for(let i=0;i<N;i++){const v=sched[s.n]?sched[s.n][i]:'';const nm=s.n.replace(/"/g,'&quot;');h+=`<td class="cell ${isBoss?'':(v?'c-'+cat(v):wkTint(i))} ${inWin(i)?'':'outwin'}" onclick="editCell(this,'${nm}',${i})">${fmtShift(v)}</td>`;}h+='</tr>';}
+  h+='</table>';document.getElementById('ttGrid').innerHTML=h;
+  {const MON=MN,MONL=ML;const tt=document.getElementById('ttTitle');if(tt){const _mn=MONL[_cF.getMonth()],_isIS=lang()==='is',_dot=_isIS?'.':'';const _head=_isIS?(t('rota').charAt(0).toUpperCase()+t('rota').slice(1)+' '+_mn+' '+_cF.getFullYear()):(_mn.charAt(0).toUpperCase()+_mn.slice(1)+' '+_cF.getFullYear()+' rota');tt.textContent=_head+'  ·  '+_cF.getDate()+_dot+' '+MON[_cF.getMonth()]+' – '+_cT.getDate()+_dot+' '+MON[_cT.getMonth()]+' '+_cT.getFullYear();}}
+  let a='<table><thead><tr><th>Name</th><th>%</th><th>Contract h</th><th>Normalized h</th><th>Balance</th><th>Time off</th></tr></thead><tbody>';
+  for(const r of auditRows()){const isB=r.boss;
+    const off=Object.entries(r.byType||{}).map(([t,v])=>'<span class="pill">'+t+' '+v.toFixed(1)+' h</span>').join(' ');
+    a+=`<tr><td>${r.n}</td><td>${r.pct}</td><td>${isB?'–':r.q.toFixed(1)}</td><td>${isB?'–':r.nf.toFixed(1)}</td><td class="${r.cls}">${isB?(r.st):((r.proj>=0?'+':'')+r.proj.toFixed(1))}</td><td>${isB?'':off}</td></tr>`;}
+  a+='</tbody></table>';document.getElementById('audit').innerHTML=a;
+  let issues=[];const openH=Math.min(...((g.s_mix||'7:00-14:00').split(',').map(x=>parseInt(x.trim()))));
+  for(let i=0;i<N;i++){const nc=staff.filter(s=>sched[s.n]&&sched[s.n][i]&&cat(sched[s.n][i])==='night').length;
+    if(g.rNight&&nc<1)issues.push(t('No night cover')+' '+DATES[i].getDate()+' '+DN[(DATES[i].getDay()+6)%7]);
+    if(!isWE[i]){const sev=staff.filter(s=>{const v=sched[s.n]&&sched[s.n][i];return v&&parseInt(v)===openH;}).length;if(sev>1)issues.push(t('Two people at 7:00 on')+' '+DATES[i].getDate());}}
+  if(g.rStreak){for(const s of staff){if(hasPat(s)&&!hasFill(s)&&s.role!=='boss')continue;let run=0,mx=0;for(let i=0;i<N;i++){if(sched[s.n]&&sched[s.n][i]){run++;mx=Math.max(mx,run);}else run=0;}if(mx>5)issues.push(s.n+' — '+mx+' '+t('days in a row'));}}
+  const _wdi=i=>(DATES[i].getDay()+6)%7;
+  const _flexible=s=>s.role!=='boss'&&!(hasPat(s)&&!hasFill(s));
+  if(g.rFriWe)for(const s of staff){if(!_flexible(s))continue;for(let i=0;i<N;i++){const v=sched[s.n]&&sched[s.n][i];
+    if(!v||cat(v)!=='eve'||_wdi(i)!==4)continue;
+    if(!((i+1<N&&sched[s.n][i+1])||(i+2<N&&sched[s.n][i+2])))issues.push(t('Friday')+' '+DATES[i].getDate()+': '+s.n+' — '+t('evening without that weekend (nobody else free)'));}}
+  if(g.rWePair)for(const s of staff){if(!_flexible(s))continue;
+    if(((s.wknd||'').match(/\d+/g)||[]).length===1)continue;   // a deliberate one-day weekend is their own arrangement
+    for(let i=0;i<N;i++){
+      if(_wdi(i)!==5||!(sched[s.n]&&sched[s.n][i]))continue;      // Saturday worked
+      if(i+1<N&&_wdi(i+1)===6&&!sched[s.n][i+1])issues.push(s.n+' — '+t('Saturday only, no Sunday')+' ('+DATES[i].getDate()+')');}
+    for(let i=1;i<N;i++){
+      if(_wdi(i)!==6||!(sched[s.n]&&sched[s.n][i]))continue;      // Sunday worked
+      if(_wdi(i-1)===5&&!sched[s.n][i-1])issues.push(s.n+' — '+t('Sunday only, no Saturday')+' ('+DATES[i].getDate()+')');}}
+  if(g.rMonWe)for(const s of staff){if(!_flexible(s))continue;for(let i=2;i<N;i++){
+    if(_wdi(i)!==0||!(sched[s.n]&&sched[s.n][i]))continue;
+    if(sched[s.n][i-1]||sched[s.n][i-2])issues.push(t('Monday')+' '+DATES[i].getDate()+': '+s.n+' — '+t('straight after the weekend (nobody else free)'));}}
+  for(let i=0;i<N;i++){const w=_wdi(i);
+    const ne=staff.filter(s=>s.role!=='boss'&&sched[s.n]&&sched[s.n][i]&&cat(sched[s.n][i])==='eve').length;
+    const nd=staff.filter(s=>s.role!=='boss'&&sched[s.n]&&sched[s.n][i]&&cat(sched[s.n][i])==='day').length;
+    const te=+g.covEve[w]||0,td=+g.covDay[w]||0;
+    if(ne<te)issues.push(t('Evening short')+' '+ne+'/'+te+' — '+DATES[i].getDate()+' '+DN[w]);
+    if(nd<td)issues.push(t('Day short')+' '+nd+'/'+td+' — '+DATES[i].getDate()+' '+DN[w]);}
+  translateDOM();
+  document.getElementById('checks').innerHTML=issues.length?
+    `<div class="note" style="background:#fbeaea;color:#a32d2d"><span>!</span><span>${issues.join(' · ')}</span></div>`:
+    `<div class="note" style="background:var(--ok);color:var(--okink)"><span>✓</span><span>All checks pass — coverage met, night person present every day, one 7am opener per weekday, no one scheduled during time off.</span></div>`;
+}
+
+// ---- editing / persistence ----
+function normalizeCfg(){const d=demo().cfg;D.cfg=Object.assign({},d,D.cfg||{});if(!Array.isArray(D.archive))D.archive=[];
+  if(!Array.isArray(D.cfg.covDay))D.cfg.covDay=d.covDay.slice();if(!Array.isArray(D.cfg.covEve))D.cfg.covEve=d.covEve.slice();
+  delete D.cfg.rWe14; // weekend 14:00 start is no longer a rule
+  if('cEve' in D.cfg){ if(+D.cfg.baseWk===35)D.cfg.baseWk=36; delete D.cfg.cEve;delete D.cfg.cWe8;delete D.cfg.cWe6;delete D.cfg.cNight; } // migrate pre-agreement saves to 36h + vægi
+}
+function migratePatterns(){ // one-time: old patterns numbered days from 0; bump to 1-based
+  if((D.staff||[]).some(s=>/(^|,)\s*0:/.test(s.pat||''))){
+    D.staff.forEach(s=>{if(s.pat)s.pat=s.pat.replace(/(^|,)(\s*)(\d+):/g,(m,pre,sp,d)=>pre+sp+(+d+1)+':');});
+  }
+}
+function readInputs(){
+  const rows=document.querySelectorAll('#staffTable tbody tr');
+  D.staff=[...rows].map(tr=>({n:tr.querySelector('.n').value,role:tr.querySelector('.role').value,pct:+tr.querySelector('.pct').value,
+    can:tr.querySelector('.can').value,noday:tr.querySelector('.noday').value,noeve:tr.querySelector('.noeve').value,wknd:tr.querySelector('.wknd').value,pat:tr.querySelector('.pat').value,bal:+tr.querySelector('.bal').value}));
+  const g=C();['s_mix','s_eve','s_night','pStart','countFrom','countTo','anchor'].forEach(k=>{const el=document.getElementById(k);if(el)g[k]=el.value;});
+  if(g.anchor){const _a=new Date(g.anchor+'T00:00:00');
+    if(!isNaN(_a)&&_a.getDay()!==1){
+      _a.setDate(_a.getDate()-((_a.getDay()+6)%7));
+      const snapped=isoOf(_a);
+      if(snapped!==g.anchor){g.anchor=snapped;const _el=document.getElementById('anchor');if(_el)_el.value=snapped;
+        if(window.msg)msg(t('“Fortnight counts from” must be a Monday — moved to')+' '+snapped);}
+    }}
+  ['baseWk','vEve','vWknd','vNight','vRed','band','eveFrom'].forEach(k=>g[k]=+document.getElementById(k).value);const _rd=document.getElementById('redDays');if(_rd)g.redDays=_rd.value;
+  ['rSup','rOpen','rNight','rRest','rStreak','rOpenRot','rFriWe','rMonWe','rWePair'].forEach(k=>g[k]=document.getElementById(k).checked);
+  const _cov=(id,k,fb)=>{const el=document.getElementById(id+'_'+k);const v=el?el.value:'';return (v===''||isNaN(+v))?fb:+v;};
+  const _dc=demo().cfg;
+  g.covDay=[0,1,2,3,4,5,6].map(k=>_cov('covDay',k,_dc.covDay[k]));
+  g.covEve=[0,1,2,3,4,5,6].map(k=>_cov('covEve',k,_dc.covEve[k]));
+}
+function fillInputs(){
+  normalizeCfg();const g=C();
+  ['s_mix','s_eve','s_night','baseWk','vEve','vWknd','vNight','vRed','eveFrom','redDays','band','pStart','pWeeks','countFrom','countTo','anchor'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=g[k]==null?'':g[k];});
+  ['rSup','rOpen','rNight','rRest','rStreak','rOpenRot','rFriWe','rMonWe','rWePair'].forEach(k=>{const el=document.getElementById(k);if(el)el.checked=g[k];});
+  [0,1,2,3,4,5,6].forEach(k=>{document.getElementById('covDay_'+k).value=g.covDay[k];document.getElementById('covEve_'+k).value=g.covEve[k];});
+  fillOffDays();renderStaff();renderOff();dateEcho();
+}
+/* Spell the two period dates out in full, next to the browser's own date boxes.
+   Those boxes show dd/mm on one computer and mm/dd on another — this never changes. */
+function dateEcho(){
+  [['countFrom','echoFrom'],['countTo','echoTo'],['anchor','echoAnchor']].forEach(([i,o])=>{
+    const inp=document.getElementById(i),out=document.getElementById(o);
+    if(!inp||!out)return;
+    const v=inp.value;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){out.textContent='';return;}
+    const d=new Date(v+'T00:00:00');
+    out.textContent = isNaN(d) ? '' : '= '+DN[(d.getDay()+6)%7]+' '+d.getDate()+' '+MN[d.getMonth()]+' '+d.getFullYear();
+  });
+}
+const _dateIds=['countFrom','countTo','anchor'];
+document.addEventListener('input',e=>{if(e.target&&_dateIds.indexOf(e.target.id)>=0)dateEcho();},true);
+document.addEventListener('change',e=>{if(e.target&&_dateIds.indexOf(e.target.id)>=0)dateEcho();},true);
+function isoOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function periodDays(){const g=C();const _f=new Date((g.countFrom||g.pStart||'2026-09-07')+'T00:00:00'),_t=new Date((g.countTo||g.countFrom||'2026-10-10')+'T00:00:00');const d0=new Date(_f);d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const _es=new Date(_t);_es.setDate(_es.getDate()+(6-((_t.getDay()+6)%7)));const N=Math.max(7,Math.round((_es-d0)/86400000)+1);const out=[];for(let i=0;i<N;i++){const d=new Date(d0);d.setDate(d.getDate()+i);out.push({iso:isoOf(d),label:`${DN[(d.getDay()+6)%7]} ${d.getDate()} ${MN[d.getMonth()]}`});}return out;}
+function fillOffDays(){const days=periodDays();const opt=days.map(d=>`<option value="${d.iso}">${d.label}</option>`).join('');['offFrom','offTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opt;});}
+const DAYOPTS=['','all','weekdays','weekends','Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function expandDays(val){const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];let out=[];(val||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean).forEach(t=>{if(t==='all')out=days.slice();else if(t==='weekdays')out.push('Mon','Tue','Wed','Thu','Fri');else if(t==='weekends')out.push('Sat','Sun');else{const d=days.find(x=>x.toLowerCase()===t.slice(0,3));if(d)out.push(d);}});return [...new Set(out)];}
+function canSel(val){const opts=[['day','Day'],['eve','Eve'],['night','Night'],['wknd','Wknd']];const sel=(val||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean);let h='<td><span class="daygrp"><input type="hidden" class="can" value="'+sel.join(',')+'">';opts.forEach(function(o){h+='<span class="daychip'+(sel.includes(o[0])?' on':'')+'" data-d="'+o[0]+'" onclick="toggleDay(this)">'+o[1]+'</span>';});return h+'</span></td>';}
+function daySel(cls,val){const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const sel=expandDays(val);let h='<td><span class="daygrp"><input type="hidden" class="'+cls+'" value="'+sel.join(',')+'">';days.forEach(d=>{h+='<span class="daychip'+(sel.includes(d)?' on':'')+'" data-d="'+d+'" onclick="toggleDay(this)">'+d.slice(0,2)+'</span>';});return h+'</span></td>';}
+function toggleDay(el){el.classList.toggle('on');const grp=el.closest('.daygrp');grp.querySelector('input').value=[...grp.querySelectorAll('.daychip.on')].map(x=>x.getAttribute('data-d')).join(',');}
+const WKNDOPTS=['','Pink','Blue'];
+function wkndSel(val){return '<td><input class="wknd" style="width:64px" value="'+(val||'')+'"></td>';}
+function renderStaff(){
+  const roles=['boss','supervisor','floor'];
+  document.querySelector('#staffTable tbody').innerHTML=D.staff.map((s,i)=>`<tr>
+    <td><input class="n" value="${s.n}" style="width:96px"></td>
+    <td><select class="role">${roles.map(r=>`<option value="${r}" ${r===s.role?'selected':''}>${r}</option>`).join('')}</select></td>
+    <td><input class="num pct" value="${s.pct}"></td>
+    ${canSel(s.can)}
+    ${daySel('noday',s.noday)}${daySel('noeve',s.noeve)}${wkndSel(s.wknd)}
+    <td><input class="pat" value="${s.pat||''}" style="width:200px"></td>
+    <td><input class="num bal" value="${s.bal}"></td>
+    <td><button class="rm" onclick="delStaff(${i})">×</button></td></tr>`).join('');
+  const w=document.getElementById('offWho');if(w)w.innerHTML=D.staff.map(s=>`<option>${s.n}</option>`).join('');
+  translateDOM();
+}
+function addStaff(){readInputs();D.staff.push({n:'New',role:'floor',pct:100,bal:0,can:'day,eve',pat:''});renderStaff();}
+function delStaff(i){readInputs();D.staff.splice(i,1);renderStaff();}
+function renderOff(){const days=periodDays();const lbl=v=>{const h=days.find(d=>d.iso===v);return h?h.label:(v||'?');};document.querySelector('#offTable tbody').innerHTML=D.off.map((o,i)=>`<tr><td>${o.who}</td><td><span class="pill">${o.type}</span></td><td>${lbl(o.f)}</td><td>${lbl(o.t)}</td><td><button class="rm" onclick="delOff(${i})">×</button></td></tr>`).join('')||'<tr><td colspan="5" class="sub">No time off.</td></tr>';}
+function addOff(){D.off.push({who:offWho.value,type:offType.value,f:offFrom.value,t:offTo.value});renderOff();}
+function delOff(i){D.off.splice(i,1);renderOff();}
+function saveLocal(){readInputs();localStorage.setItem('demo_rota_setup',JSON.stringify(D));msg('Saved on this computer.');}
+function exportJSON(){readInputs();const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='rota_setup.json';a.click();}
+function fmtD(d){return d.getDate()+' '+MN[d.getMonth()];}
+function buildExport(){
+  if(!DATES.length||!sched||!Object.keys(sched).length)return null;
+  const g=C(),staff=D.staff,N=DATES.length;
+  const cF=new Date((g.countFrom||g.pStart)+'T00:00:00'),cT=new Date((g.countTo||g.pStart)+'T00:00:00');
+  const rows=[];
+  rows.push([ML[cF.getMonth()]+' '+cF.getFullYear()+' rota — '+fmtD(cF)+' to '+fmtD(cT)+' '+cT.getFullYear()]);
+  rows.push([]);
+  for(let start=0;start<N;start+=14){
+    const end=Math.min(start+14,N),wk=Math.floor(start/14)+1;
+    rows.push(['Fortnight '+wk+'  ('+fmtD(DATES[start])+' – '+fmtD(DATES[end-1])+')']);
+    const dr=[''],wr=[''];for(let i=start;i<end;i++){dr.push(fmtD(DATES[i]));wr.push(DN[(DATES[i].getDay()+6)%7]);}
+    rows.push(dr);rows.push(wr);
+    for(const s of staff){const r=[s.n];for(let i=start;i<end;i++)r.push(fmtShift(sched[s.n]&&sched[s.n][i]));rows.push(r);}
+    rows.push([]);
+  }
+  if(D.off&&D.off.length){rows.push(['Sumarfrí / Time off']);for(const o of D.off){const f=DATES[o.f]?fmtD(DATES[o.f]):('day '+(o.f+1)),t=DATES[o.t]?fmtD(DATES[o.t]):('day '+(o.t+1));rows.push([o.who,o.type,f+' – '+t]);}}
+  return rows;
+}
+function copySheets(){const rows=buildExport();if(!rows){msg('Generate a schedule first.');return;}const tsv=rows.map(r=>r.join('\t')).join('\n');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).then(()=>msg('Copied — paste into Google Sheets (Ctrl/Cmd+V).'),()=>fallbackCopy(tsv));else fallbackCopy(tsv);}
+function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');msg('Copied — paste into Google Sheets.');}catch(e){msg('Press Ctrl/Cmd+C to copy.');}document.body.removeChild(ta);}
+function downloadCSV(){const rows=buildExport();if(!rows){msg('Generate a schedule first.');return;}const esc=v=>{v=(v==null?'':''+v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};const csv=rows.map(r=>r.map(esc).join(',')).join('\n');const g=C(),cF=new Date((g.countFrom||g.pStart)+'T00:00:00'),nm='rota_'+cF.getFullYear()+'-'+String(cF.getMonth()+1).padStart(2,'0')+'.csv';const b=new Blob([csv],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=nm;a.click();msg('Downloaded '+nm);}
+function buildXLSHTML(){
+  if(!DATES.length||!sched||!Object.keys(sched).length)return null;
+  const g=C(),staff=D.staff,N=DATES.length;
+  const cF=new Date((g.countFrom||g.pStart)+'T00:00:00'),cT=new Date((g.countTo||g.pStart)+'T00:00:00');
+  const col={day:'#dff3e6',eve:'#fde8d5',night:'#e7e0f6',pink:'#fbecf2',blue:'#eaf2fb',hd:'#efefef'};
+  const wtint=i=>isRed[i]?'#fcebeb':(isWE[i]?(Math.floor(i/7)%2===0?col.pink:col.blue):col.hd);
+  let h='<meta charset="utf-8"><style>td{mso-number-format:"\\@"}</style><table border="1" style="border-collapse:collapse;font-family:Arial;font-size:12px">';
+  h+='<tr><td colspan="15" style="border:none;font-weight:bold;font-size:15px;padding:6px 2px">'+ML[cF.getMonth()]+' '+cF.getFullYear()+' rota — '+fmtD(cF)+' to '+fmtD(cT)+' '+cT.getFullYear()+'</td></tr>';
+  for(let start=0;start<N;start+=14){const end=Math.min(start+14,N),wk=Math.floor(start/14)+1;
+    h+='<tr><td colspan="15" style="background:'+col.hd+';font-weight:bold;padding:4px">Fortnight '+wk+'  ('+fmtD(DATES[start])+' – '+fmtD(DATES[end-1])+')</td></tr>';
+    h+='<tr><td style="background:'+col.hd+'"></td>';for(let i=start;i<end;i++)h+='<td style="background:'+wtint(i)+';font-weight:bold;text-align:center;padding:3px">'+fmtD(DATES[i])+'</td>';h+='</tr>';
+    h+='<tr><td style="background:'+col.hd+';font-weight:bold">Name</td>';for(let i=start;i<end;i++)h+='<td style="background:'+wtint(i)+';text-align:center">'+DN[(DATES[i].getDay()+6)%7]+'</td>';h+='</tr>';
+    for(const sp of staff){h+='<tr><td style="font-weight:bold;white-space:nowrap">'+sp.n+'</td>';
+      for(let i=start;i<end;i++){const v=sched[sp.n]&&sched[sp.n][i];let bg='';if(v){const c=cat(v);bg=c==='day'?col.day:c==='eve'?col.eve:col.night;}else if(isWE[i])bg=wtint(i);
+        h+='<td style="text-align:center;'+(bg?'background:'+bg:'')+'">'+fmtShift(v).replace(/-/g,'–')+'</td>';}h+='</tr>';}
+    h+='<tr><td colspan="15" style="border:none">&nbsp;</td></tr>';}
+  if(D.off&&D.off.length){h+='<tr><td colspan="15" style="background:'+col.day+';font-weight:bold;padding:4px">Sumarfrí / Time off</td></tr>';
+    for(const o of D.off){const f=DATES[o.f]?fmtD(DATES[o.f]):('day '+(o.f+1)),t=DATES[o.t]?fmtD(DATES[o.t]):('day '+(o.t+1));h+='<tr><td style="font-weight:bold">'+o.who+'</td><td colspan="2">'+o.type+'</td><td colspan="12">'+f+' – '+t+'</td></tr>';}}
+  return {html:h+'</table>',cF};
+}
+function downloadXLS(){const r=buildXLSHTML();if(!r){msg('Generate a schedule first.');return;}const nm='rota_'+r.cF.getFullYear()+'-'+String(r.cF.getMonth()+1).padStart(2,'0')+'.xls';const b=new Blob(['﻿'+r.html],{type:'application/vnd.ms-excel'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=nm;a.click();msg('Downloaded '+nm+' — opens in Excel & Google Sheets.');}
+function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{D=JSON.parse(r.result);migratePatterns();migrateRoles();migrateWknd();migratePrefs();migrateLegacySun();migrateOffDates();fillInputs();generate();msg('Setup imported.');}catch(x){msg('Could not read that file.');}};r.readAsText(f);}
+function bakeDownload(){readInputs();try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(_e){}
+ let src='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+ src=src.replace(/let BAKED=[\s\S]*?;\/\/BAKESLOT/, 'let BAKED='+JSON.stringify(D)+';//BAKESLOT');
+ const b=new Blob([src],{type:'text/html'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='dashboard_prototype_month.html';a.click();
+ msg('Saved. Your work is kept, and a ready-to-send file is in your Downloads (dashboard_prototype_month.html).');}
+function loadDemo(){const _ar=D.archive||[];D=demo();D.archive=_ar;migrateWknd();fillInputs();msg('Demo care-home data loaded.');}
+function resetDemo(){try{["demo_rota_setup","demo_rota_undo","demo_rota_fs_state"].forEach(k=>localStorage.removeItem(k));}catch(_e){}location.reload();}
+function startBlank(){D={staff:[{n:'Person 1',role:'floor',pct:100,bal:0,can:'day,eve',pat:''}],off:[],cfg:demo().cfg};fillInputs();msg('Blank setup — enter your workplace.');}
+/* ---------- Archive: closing a month, and the record it leaves ---------- */
+function fmtLong(iso){const d=new Date(String(iso)+'T00:00:00');return isNaN(d)?String(iso):DN[(d.getDay()+6)%7]+' '+d.getDate()+' '+MN[d.getMonth()]+' '+d.getFullYear();}
+function periodLabel(){const g=C();const f=new Date((g.countFrom||g.pStart)+'T00:00:00');if(isNaN(f))return 'this period';const m=ML[f.getMonth()];return m.charAt(0).toUpperCase()+m.slice(1)+' '+f.getFullYear();}
+/* Same day-of-month next month, clamped when the next month is shorter (31 Jan -> 28 Feb). */
+function addMonth(iso){const d=new Date(String(iso)+'T00:00:00');if(isNaN(d))return iso;const day=d.getDate();
+  d.setDate(1);d.setMonth(d.getMonth()+1);
+  const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return isoOf(d);}
+
+let _modalOk=null;
+function openModal(title,body,okLabel,fn){document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=body;const b=document.getElementById('modalOk');b.textContent=okLabel;
+  _modalOk=fn;document.getElementById('modal').hidden=false;translateDOM();}
+function closeModal(){document.getElementById('modal').hidden=true;_modalOk=null;}
+document.getElementById('modalOk').addEventListener('click',()=>{const f=_modalOk;closeModal();if(f)f();});
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('modal').hidden)closeModal();});
+
+function closeMonthPreview(){
+  readInputs();
+  if(!DATES.length||!sched||!Object.keys(sched).length){msg('Generate a timetable first.');return;}
+  const g=C(),rows=auditRows();
+  const nf=addMonth(g.countFrom),nt=addMonth(g.countTo);
+  let h='<p class="sub">This keeps <b>'+periodLabel()+'</b> as a record you can reprint at any time, then sets the tool up for the next month. Nothing is deleted, and Undo puts it back.</p>';
+  h+='<p class="sub" style="margin-top:10px"><b>Balances carried forward</b> — each person\'s projected balance becomes their opening balance for next month:</p>';
+  h+='<div style="max-height:220px;overflow:auto"><table class="mtab"><tr><th>Name</th><th>Opening now</th><th>Carried into next month</th></tr>';
+  rows.forEach(r=>{if(r.boss)return;h+='<tr><td>'+r.n+'</td><td>'+(r.bal>=0?'+':'')+r.bal.toFixed(1)+'</td><td><b>'+(r.proj>=0?'+':'')+r.proj.toFixed(1)+'</b></td></tr>';});
+  h+='</table></div>';
+  h+='<p class="sub" style="margin-top:10px">New period becomes <b>'+fmtLong(nf)+' – '+fmtLong(nt)+'</b>. Staff, patterns, coefficients and the fortnight anchor all stay exactly as they are.</p>';
+  openModal(t('Close')+' '+periodLabel()+' '+t('and start the next month?'),h,t('Close month & roll forward'),doCloseMonth);
+}
+function doCloseMonth(){
+  const g=C(),rows=auditRows();
+  pushUndo(JSON.stringify(D));
+  const cp=x=>JSON.parse(JSON.stringify(x));
+  const entry={id:'a'+Date.now(),closedAt:new Date().toISOString(),from:g.countFrom,to:g.countTo,label:periodLabel(),
+    dates:DATES.map(isoOf),sched:cp(sched),staff:cp(D.staff),off:cp(D.off||[]),cfg:cp(g),
+    audit:rows.map(r=>({n:r.n,pct:r.pct,role:r.role,bal:+r.bal.toFixed(2),q:+r.q.toFixed(2),nf:+r.nf.toFixed(2),holH:+r.holH.toFixed(2),byType:r.byType,proj:+r.proj.toFixed(2),st:r.st}))};
+  if(!Array.isArray(D.archive))D.archive=[];
+  D.archive.push(entry);
+  rows.forEach(r=>{if(r.boss)return;const s=D.staff.find(x=>x.n===r.n);if(s)s.bal=Math.round(r.proj*10)/10;});
+  g.countFrom=addMonth(g.countFrom);g.countTo=addMonth(g.countTo);
+  try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(_e){}
+  fillInputs();generate();renderArchive();updateUndoBtn();
+  msg(t('Closed')+' '+entry.label+' — '+t('balances carried, period moved on. Undo is available.'));
+}
+
+/* Run something with the globals temporarily pointed at an archived month, then always put them back. */
+function withArchive(e,fn){
+  const sD=D,sS=sched,sDT=DATES,sW=isWE,sR=isRed;
+  try{
+    D={staff:e.staff,off:e.off||[],cfg:e.cfg,archive:sD.archive};
+    DATES=e.dates.map(x=>new Date(x+'T00:00:00'));
+    isWE=DATES.map(d=>d.getDay()===0||d.getDay()===6);
+    const rs=new Set((e.cfg.redDays||'').split(',').map(x=>x.trim()).filter(Boolean));
+    isRed=DATES.map(d=>rs.has(isoOf(d)));
+    sched=e.sched;
+    return fn();
+  }finally{D=sD;sched=sS;DATES=sDT;isWE=sW;isRed=sR;}
+}
+function archById(id){return (D.archive||[]).find(e=>e.id===id);}
+function archGrid(e){
+  const dates=e.dates.map(x=>new Date(x+'T00:00:00'));
+  const rs=new Set((e.cfg.redDays||'').split(',').map(x=>x.trim()).filter(Boolean));
+  const tint=(d,i)=>rs.has(isoOf(d))?'wk-red':((d.getDay()===0||d.getDay()===6)?(Math.floor(i/7)%2===0?'wk-pink':'wk-blue'):'');
+  let h='<div class="tt"><table><tr><th class="name">Staff</th>';
+  dates.forEach((d,i)=>{h+='<th class="'+tint(d,i)+'">'+d.getDate()+' '+DN[(d.getDay()+6)%7]+'</th>';});
+  h+='</tr>';
+  e.staff.forEach(s=>{h+='<tr><td class="name">'+s.n+'</td>';
+    dates.forEach((d,i)=>{const v=(e.sched[s.n]||{})[i]||'';
+      h+='<td class="cell '+(v?'c-'+cat(v):tint(d,i))+'">'+fmtShift(v)+'</td>';});
+    h+='</tr>';});
+  h+='</table></div>';
+  h+='<table class="mtab" style="margin-top:12px"><tr><th>Name</th><th>%</th><th>Opening</th><th>Contract h</th><th>Normalized h</th><th>Closing balance</th></tr>';
+  (e.audit||[]).forEach(r=>{if(r.role==='boss')return;
+    h+='<tr><td>'+r.n+'</td><td>'+r.pct+'</td><td>'+(r.bal>=0?'+':'')+r.bal.toFixed(1)+'</td><td>'+r.q.toFixed(1)+'</td><td>'+r.nf.toFixed(1)+'</td><td><b>'+(r.proj>=0?'+':'')+r.proj.toFixed(1)+'</b></td></tr>';});
+  h+='</table>';
+  return h;
+}
+function viewArchive(id){const e=archById(id);if(!e)return;const box=document.getElementById('av_'+id);if(!box)return;
+  if(box.hidden){box.innerHTML=archGrid(e);box.hidden=false;}else{box.hidden=true;box.innerHTML='';}}
+function archiveXLS(id){const e=archById(id);if(!e)return;
+  withArchive(e,()=>{const r=buildXLSHTML();if(!r){msg('Nothing to export.');return;}
+    const nm='rota_'+e.from+'_to_'+e.to+'.xls';
+    const b=new Blob(['\ufeff'+r.html],{type:'application/vnd.ms-excel'});
+    const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=nm;a.click();
+    msg('Downloaded '+nm);});}
+function restoreArchive(id){const e=archById(id);if(!e)return;
+  openModal(t('Copy')+' '+e.label+' '+t('back into the editor?'),
+    '<p class="sub">This replaces the staff list, time off, coefficients <b>and the period dates</b> '+t('currently in the editor with the ones saved for')+' '+e.label+'. '+t('The archived record itself is not touched, and Undo puts your current setup back.')+'</p>',
+    t('Copy into editor'),()=>{
+      pushUndo(JSON.stringify(D));
+      const cp=x=>JSON.parse(JSON.stringify(x));
+      D.staff=cp(e.staff);D.off=cp(e.off||[]);D.cfg=cp(e.cfg);
+      try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(_e){}
+      fillInputs();generate();updateUndoBtn();msg(t('Copied')+' '+e.label+' '+t('into the editor.'));});}
+function removeArchive(id){const e=archById(id);if(!e)return;
+  openModal(t('Remove')+' '+e.label+' '+t('from the archive?'),
+    '<p class="sub">This deletes the saved record of <b>'+e.label+'</b> ('+fmtLong(e.from)+' – '+fmtLong(e.to)+'). '+t('It does not change any balance or the current timetable. Undo puts it back.')+'</p>',
+    t('Remove it'),()=>{
+      pushUndo(JSON.stringify(D));
+      D.archive=(D.archive||[]).filter(x=>x.id!==id);
+      try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(_e){}
+      renderArchive();updateUndoBtn();msg(t('Removed')+' '+e.label+' '+t('from the archive.'));});}
+/* Start everyone from a clean slate. Asked for explicitly, confirmed in a dialog, and undoable —
+   it only clears the carried +/- column, never the staff, patterns or the timetable. */
+function resetBalances(){
+  readInputs();
+  const nz=D.staff.filter(s=>s.role!=='boss'&&(+s.bal||0)!==0);
+  if(!nz.length){msg(t('All balances are already zero.'));return;}
+  let h='<p class="sub">'+t('This sets the carried +/- balance of every person to 0, so the next month starts from a clean slate. Staff, patterns, time off and the timetable are not touched, and Undo puts the old numbers back.')+'</p>';
+  h+='<div style="max-height:220px;overflow:auto"><table class="mtab"><tr><th>'+t('Name')+'</th><th>'+t('Now')+'</th><th>'+t('After')+'</th></tr>';
+  nz.forEach(s=>{h+='<tr><td>'+s.n+'</td><td>'+((+s.bal>=0?'+':'')+(+s.bal).toFixed(1))+'</td><td><b>0</b></td></tr>';});
+  h+='</table></div>';
+  openModal(t('Set all balances to zero?'),h,t('Set them to zero'),()=>{
+    pushUndo(JSON.stringify(D));
+    D.staff.forEach(s=>{s.bal=0;});
+    try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(_e){}
+    fillInputs();generate();updateUndoBtn();
+    msg(t('All balances set to zero.'));
+  });
+}
+function renderArchive(){
+  const el=document.getElementById('archList');if(!el)return;
+  const list=(D.archive||[]).slice().sort((a,b)=>String(b.from).localeCompare(String(a.from)));
+  if(!list.length){el.innerHTML='<p class="sub">No months closed yet. When a timetable is finished, press <b>Close month &amp; start next</b> on the Timetable tab — it files the month here and carries everyone\'s balance into the next one.</p>';return;}
+  el.innerHTML=list.map(e=>{
+    const rows=(e.audit||[]).filter(r=>r.role!=='boss');
+    const worst=rows.slice().sort((a,b)=>Math.abs(b.proj)-Math.abs(a.proj))[0];
+    return '<div class="archcard"><div class="archhead"><b>'+e.label+'</b>'+
+      '<span class="sub">'+fmtLong(e.from)+' – '+fmtLong(e.to)+' · '+t('closed')+' '+String(e.closedAt).slice(0,10)+'</span></div>'+
+      '<div class="sub" style="margin-top:3px">'+rows.length+' '+t('people')+(worst?' · '+t('furthest from zero')+': '+worst.n+' '+(worst.proj>=0?'+':'')+worst.proj.toFixed(1)+'h':'')+'</div>'+
+      '<div class="archbtns">'+
+      '<button class="btn ghost" onclick="viewArchive(\''+e.id+'\')">View</button>'+
+      '<button class="btn ghost" onclick="archiveXLS(\''+e.id+'\')">Excel</button>'+
+      '<button class="btn ghost" onclick="restoreArchive(\''+e.id+'\')">Copy setup into editor</button>'+
+      '<button class="btn ghost" onclick="removeArchive(\''+e.id+'\')">Remove</button></div>'+
+      '<div id="av_'+e.id+'" class="archview" hidden></div></div>';
+  }).join('');
+  translateDOM();
+}
+/* ---------- Icelandic / English ----------
+   The page is authored in English and translated at display time. Every text node keeps its
+   English original in a WeakMap, so switching language is lossless, nothing is translated
+   twice, and text the scripts generate is covered as well as the static page. */
+const I18N_IS={"Organisation": "Stofnun", "shifts scheduler": "– vaktaskipulag", "monthly view · 11th→10th": "mánaðaryfirlit · 11. → 10.", "*Hospital, Care-home, Elderly-home, any Production or Organisation with shifts": "*Sjúkrahús, hjúkrunarheimili, dvalarheimili — hvaða stofnun eða framleiðsla sem er með vaktir", "▶ Generate schedule": "▶ Búa til vaktaskrá", "💾 Save to my computer": "💾 Vista í tölvuna mína", "↺ Undo": "↺ Afturkalla", "auto-save on": "sjálfvirk vistun virk", "no file linked yet": "engin skrá tengd enn", "Open a saved file": "Opna vistaða skrá", "Download HTML": "Sækja HTML", "Staff": "Starfsfólk", "Time": "Frí", "Shifts & coverage": "Vaktir og mönnun", "Rules": "Reglur", "Timetable ▸": "Vaktaskrá ▸", "Timetable": "Vaktaskrá", "Archive": "Skjalasafn", "Name": "Nafn", "Role": "Hlutverk", "Can work": "Getur unnið", "No day on": "Ekki dagvakt á", "No eve on": "Ekki kvöldvakt á", "Wknd": "Helgi", "Pattern (keep)": "Mynstur (fast)", "+/− hours balance from last month": "+/− klst. staða frá síðasta mánuði", "boss": "yfirmaður", "supervisor": "verkstjóri", "floor": "á gólfi", "Day": "Dagur", "Eve": "Kvöld", "Night": "Nótt", "Mo": "Má", "Tu": "Þr", "We": "Mi", "Th": "Fi", "Fr": "Fö", "Sa": "La", "Su": "Su", "+ Add person": "+ Bæta við starfsmanni", "Period": "Tímabil", "Count +/- from": "Telja +/− frá", "to": "til", "Fortnight counts from": "Hálfsmánuður telst frá", "The timetable starts on the Monday of the “from” week and shows enough weeks to cover “to”.": "Vaktaskráin byrjar á mánudegi „frá“-vikunnar og sýnir nógu margar vikur til að ná yfir „til“.", "Leave “fortnight counts from” alone once it is set.": "Ekki breyta „hálfsmánuður telst frá“ eftir að það hefur verið stillt.", "It is the fixed Monday that day 1 of every pattern is measured from, so patterns and weekend groups stay in step when you move to the next month. Change it and everyone's fortnight shifts.": "Þetta er fasti mánudagurinn sem dagur 1 í öllum mynstrum er talinn frá, svo mynstur og helgarhópar haldist í takt þegar þú færir þig í næsta mánuð. Ef því er breytt færist hálfsmánuður allra.", "The date boxes above are drawn by your browser, so their order (day/month or month/day) follows your computer's country setting.": "Dagsetningarreitirnir hér að ofan koma frá vafranum, svo röðin (dagur/mánuður eða mánuður/dagur) fer eftir landstillingu tölvunnar.", "Always check the spelled-out date shown beside each box": "Athugaðu alltaf dagsetninguna sem er skrifuð út við hliðina á hverjum reit", "— that one is the same on every computer.": "— hún er eins í öllum tölvum.", "Holiday": "Frí", "Who": "Hver", "Type": "Tegund", "From": "Frá", "To": "Til", "from": "frá", "holiday": "orlof", "day off": "frídagur", "temporary end": "tímabundin starfslok", "sick": "veikindi", "+ Add": "+ Bæta við", "Holidays, single days off, or a temporary contract ending. Pick the actual dates — the generator won't schedule anyone during those dates.": "Orlof, stakir frídagar eða tímabundin starfslok. Veldu raunverulegar dagsetningar — enginn fær vakt á þeim dögum.", "Shift lengths": "Lengd vakta", "Day shift": "Dagvakt", "Evening shift": "Kvöldvakt", "Night shift": "Næturvakt", "the day-shift options — one each; the 7-start is the early person / opener": "valkostir dagvaktar — einn af hverjum; sá sem byrjar kl. 7 opnar", "standard + shorter option": "venjuleg + styttri valkostur", "night staff only": "eingöngu næturstarfsfólk", "Coverage — people needed per shift, per day": "Mönnun — fjöldi sem þarf á vakt, eftir dögum", "Set a different number on specific days (e.g. 5 on evenings for Friday and Tuesday). Night is always 1.": "Settu aðra tölu á tiltekna daga (t.d. 5 á kvöldvakt á föstudögum og þriðjudögum). Nótt er alltaf 1.", "Shift": "Vakt", "Evening": "Kvöld", "Weekend": "Helgi", "1 (night staff), every day": "1 (næturstarfsfólk), alla daga", "Mon": "Mán", "Tue": "Þri", "Wed": "Mið", "Thu": "Fim", "Fri": "Fös", "Sat": "Lau", "Sun": "Sun", "Hours & coefficients": "Klukkustundir og vægi", "100% = h / week": "100% = klst / viku", "Evening × (vægi)": "Kvöldvægi ×", "Evening × applies from": "Kvöldvægi gildir frá", "Weekend day ×": "Helgarvægi ×", "Night ×": "Næturvægi ×", "Red day × (all hours)": "Rauður dagur × (allar klst)", "Balance band ±": "Vikmörk ±", "h": "klst", "Structural rules": "Reglur vaktaskrár", "Everything the generator enforces, in one place. The switches are the rules you can turn off; below them are the ones that are always on, and the pay coefficients that decide who gets picked first.": "Allt sem kerfið fer eftir, á einum stað. Rofarnir eru reglur sem hægt er að slökkva á; fyrir neðan þá eru þær sem eru alltaf virkar, og vægin sem ráða hver er valinn fyrst.", "Cover — who has to be on the floor": "Mönnun — hverjir þurfa að vera á gólfi", "One supervisor on the floor each weekday, alternating weekends": "Einn verkstjóri á gólfi alla virka daga, skiptast á um helgar", "Always one night person (night-capable staff only)": "Alltaf einn á næturvakt (aðeins þeir sem geta unnið nætur)", "One 7:00 opener each weekday": "Einn opnar kl. 7:00 alla virka daga", "Rotate the 7:00 opener across morning staff (not the same person two days running)": "Skipta 7:00-opnun á milli morgunstarfsfólks (ekki sami tvo daga í röð)", "Rest — what protects the person": "Hvíld — það sem verndar starfsmanninn", "11h rest: after an evening, avoid a next-day morning (never the 7:00 opener); if unavoidable, end that evening at 21:00": "11 klst hvíld: eftir kvöldvakt, forðast morgunvakt daginn eftir (aldrei 7:00-opnun); ef óhjákvæmilegt, þá endar kvöldvaktin kl. 21:00", "Hard limit: max 5 shifts in a row, then a day off": "Fast hámark: mest 5 vaktir í röð, svo frídagur", "Monday after a worked weekend goes to someone else first (yields if the day would otherwise be short)": "Mánudagur eftir unna helgi fer fyrst á einhvern annan (víkur ef dagurinn yrði annars undirmannaður)", "Weekends": "Helgar", "Friday evening goes to that weekend's people first (yields if the evening would otherwise be short)": "Föstudagskvöld fer fyrst á fólk sem vinnur þá helgi (víkur ef kvöldið yrði annars undirmannað)", "Always on — not switchable": "Alltaf virkt — ekki hægt að slökkva", "A fixed pattern is copied exactly": "Fast mynstur er afritað nákvæmlega", "and repeats every 14 days. Pattern people are exempt from the streak, Friday and Monday rules above — their pattern is the agreement. Add": "og endurtekst á 14 daga fresti. Þeir sem eru með mynstur eru undanþegnir reglunum hér að ofan um vaktir í röð, föstudaga og mánudaga — mynstrið er samkomulagið. Bættu", "to a pattern and their remaining days get auto-scheduled under the normal rules.": "við mynstrið og aðrir dagar fyllast sjálfkrafa eftir venjulegum reglum.", "Nobody is scheduled during booked time off": "Enginn fær vakt í skráðu fríi", "— holiday or temporary end, from the Time off tab.": "— orlof eða tímabundin starfslok, af Frí-flipanum.", "Only shift types a person can work": "Aðeins þær vaktir sem viðkomandi getur unnið", "— the Day / Eve / Night chips — and never on a weekday they have blocked under “No day” or “No eve”.": "— Dagur / Kvöld / Nótt merkin — og aldrei á degi sem er lokaður undir „Ekki dagvakt á“ eða „Ekki kvöldvakt á“.", "Weekend groups are honoured.": "Helgarhópar eru virtir.", "A person's Wknd days (e.g. 6,7 or 13,14) are the weekends they work; leave it blank and they auto-alternate between the two.": "Helgardagar viðkomandi (t.d. 6,7 eða 13,14) eru helgarnar sem hann vinnur; ef reiturinn er auður skiptist hann sjálfkrafa á milli þeirra.", "Daily cover comes from the Coverage table": "Dagleg mönnun kemur úr mönnunartöflunni", "— a separate day and evening target per weekday. Night is always 1.": "— sérstakt markmið fyrir dag og kvöld eftir vikudögum. Nótt er alltaf 1.", "The boss is off-floor": "Yfirmaðurinn er ekki á gólfi", "and never counts towards cover.": "og telst aldrei með í mönnun.", "Whoever is furthest below their contracted hours is picked first": "Sá sem er lengst undir samningsbundnum klst er valinn fyrst", ", measured in normalized hours inside the pay window — so the rota and the balance stay in step.": ", mælt í vegnum klst innan launatímabilsins — svo vaktaskráin og staðan haldist í takt.", "Pay coefficients — set in “Hours & coefficients” above": "Vægi — stillt í „Klukkustundir og vægi“ hér að ofan", "Night ×1.20": "Nótt ×1,20", "for the whole shift, on any day — a night on a red day or a weekend is still just the night ×.": "fyrir alla vaktina, hvaða dag sem er — næturvakt á rauðum degi eða um helgi fær samt bara næturvægið.", "Red day ×1.05 for every hour": "Rauður dagur ×1,05 á hverja klukkustund", ", day or evening alike, and the whole shift — not only the part after 17:00.": ", bæði dagur og kvöld, og öll vaktin — ekki bara hlutinn eftir kl. 17.", "Weekend ×1.05 for every hour": "Helgi ×1,05 á hverja klukkustund", ", the same way.": ", á sama hátt.", "Evening ×1.05 on the hours from 17:00 onward": "Kvöld ×1,05 á stundirnar frá kl. 17:00 og áfram", ", not on the whole shift, on an ordinary weekday. Every evening loses its 16:00–17:00 hour from the ×, however long or short it is:": ", ekki á alla vaktina, á venjulegum virkum degi. Sérhver kvöldvakt missir 16:00–17:00 stundina úr væginu, hversu löng eða stutt sem hún er:", "16:00–22:00 → 1 plain + 5 × 1.05 =": "16:00–22:00 → 1 óvegin + 5 × 1,05 =", "(not 6.30)": "(ekki 6,30)", "16:00–21:00 → 1 plain + 4 × 1.05 =": "16:00–21:00 → 1 óvegin + 4 × 1,05 =", "— the shortened evening the 11h-rest rule creates": "— stytta kvöldvaktin sem 11 klst hvíldarreglan býr til", "14:00–22:00 → 3 plain + 5 × 1.05 =": "14:00–22:00 → 3 óvegnar + 5 × 1,05 =", "17:00–22:00 → nothing to deduct, all 5 hours at 1.05 =": "17:00–22:00 → ekkert dregst frá, allar 5 stundirnar á 1,05 =", "Balance band ±5h": "Vikmörk ±5 klst", "— inside that, a person reads as “on track”.": "— innan þeirra telst viðkomandi „í jafnvægi“.", "Generated timetable": "Vaktaskrá", "Download Excel": "Sækja Excel", "Close month & start next ▸": "Loka mánuði og hefja næsta ▸", "Hours & contract check": "Klukkustundir og samningsathugun", "Contract h": "Samningsklst", "Normalized h": "Vegnar klst", "Balance": "Staða", "Time off": "Frí", "boss (off-floor)": "yfirmaður (ekki á gólfi)", "on track": "í jafnvægi", "All checks pass — coverage met, night person present every day, one 7am opener per weekday, no one scheduled during time off.": "Allar athuganir í lagi — mönnun uppfyllt, næturstarfsmaður alla daga, einn opnar kl. 7 alla virka daga, enginn á vakt í fríi.", "Closed months": "Lokaðir mánuðir", "Every month you close is kept here in full — the timetable, the hours audit, and the staff list and coefficients exactly as they were at the time. Nothing here is ever changed by later edits, so an old month always reprints the way it was agreed.": "Hver mánuður sem þú lokar geymist hér í heild — vaktaskráin, klukkustundayfirlitið, og starfsmannalistinn og vægin nákvæmlega eins og þau voru þá. Ekkert hér breytist við síðari breytingar, svo eldri mánuður prentast alltaf eins og um hann var samið.", "Cancel": "Hætta við", "View": "Skoða", "Copy setup into editor": "Afrita uppsetningu í ritil", "Remove": "Fjarlægja", "Opening": "Staða í upphafi", "Closing balance": "Staða í lok", "Opening now": "Staða núna", "Carried into next month": "Flyst í næsta mánuð", "Close month & roll forward": "Loka mánuði og flytja áfram", "Nothing to undo yet": "Ekkert til að afturkalla enn", "No night cover": "Engin næturmönnun", "Two people at 7:00 on": "Tveir kl. 7:00 þann", "days in a row": "vaktir í röð", "Friday": "Föstudagur", "Monday": "Mánudagur", "evening without that weekend (nobody else free)": "kvöldvakt án þeirrar helgar (enginn annar laus)", "straight after the weekend (nobody else free)": "strax eftir helgina (enginn annar laus)", "Evening short": "Kvöld undirmannað", "Day short": "Dagur undirmannaður", "over": "yfir", "under": "undir", "people": "starfsmenn", "furthest from zero": "lengst frá núlli", "closed": "lokað", "Saved on this computer.": "Vistað í þessari tölvu.", "Generate a schedule first.": "Búðu fyrst til vaktaskrá.", "Generate a timetable first.": "Búðu fyrst til vaktaskrá.", "Nothing to undo.": "Ekkert til að afturkalla.", "Could not undo that step.": "Tókst ekki að afturkalla það skref.", "Reverted the last change. Press Undo again to go back further.": "Síðustu breytingu afturkallað. Ýttu aftur á Afturkalla til að fara lengra til baka.", "Setup imported.": "Uppsetning flutt inn.", "Could not read that file.": "Tókst ekki að lesa þessa skrá.", "Demo care-home data loaded.": "Sýnigögn hjúkrunarheimilis hlaðin.", "This computer blocked the save window.": "Þessi tölva hindraði vistunargluggann.", "this computer blocks saving to a file": "þessi tölva leyfir ekki vistun í skrá", "This computer will not let the page save a file at all.": "Þessi tölva leyfir síðunni alls ekki að vista skrá.", "Rota setup": "Uppsetning vaktaskrár", "This browser can't save your rota to a file on this computer.": "Þessi vafri getur ekki vistað vaktaskrána í skrá í þessari tölvu.", "Your work is kept inside this browser only — it will still be here when you reopen this page on this computer, but it can't be backed up or moved. For full saving, open this page in": "Vinnan þín geymist eingöngu inni í þessum vafra — hún verður hér áfram þegar þú opnar síðuna aftur í þessari tölvu, en ekki er hægt að taka afrit af henni eða færa hana. Til að geta vistað að fullu skaltu opna þessa síðu í", "this browser cannot save to a file": "þessi vafri getur ekki vistað í skrá", "Add or remove people, change their role, %, which shift types they can work, and their carried balance. Roles: boss (off-floor), supervisor, floor. A floor person is scheduled automatically — unless you fill in their Pattern, in which case that fixed pattern is copied and repeated (add the word 'fill' to the pattern to also auto-schedule their remaining days, e.g. weekends fixed, weekdays filled). In Pattern, the number is the day of the fortnight: 1=Mon, 2=Tue … 7=Sun, 8=next Mon … 14=next Sun; it repeats every 14 days. The 11th–10th window only affects the balance, not the pattern. Wknd = the fortnight weekend-days a person works, e.g. 6,7 (Sat+Sun of week 1) or 13,14 (week 2); leave blank to auto-alternate.": "Bættu við eða fjarlægðu fólk, breyttu hlutverki, %, hvaða vaktir það getur unnið og stöðunni sem það kemur með. Hlutverk: yfirmaður (ekki á gólfi), verkstjóri, á gólfi. Sá sem er á gólfi fær vaktir sjálfkrafa — nema mynstur sé fyllt út, þá er það fasta mynstur afritað og endurtekið (bættu orðinu „fill“ við mynstrið til að fylla líka sjálfkrafa í aðra daga, t.d. helgar fastar og virkir dagar fylltir). Í mynstri er talan dagur hálfsmánaðarins: 1=mán, 2=þri … 7=sun, 8=næsti mán … 14=næsti sun; endurtekst á 14 daga fresti. Tímabilið 11.–10. hefur eingöngu áhrif á stöðuna, ekki mynstrið. Helgi = helgardagar hálfsmánaðarins sem viðkomandi vinnur, t.d. 6,7 (lau+sun í viku 1) eða 13,14 (viku 2); skildu eftir autt til að skiptast sjálfkrafa á.", "Change start/end times if shift lengths change. For Day and Evening you can list alternatives separated by commas — the first is the default the generator uses; the others become options you can switch to on any cell of the timetable.": "Breyttu upphafs- og lokatíma ef lengd vakta breytist. Fyrir dag og kvöld má telja upp valkosti aðskilda með kommu — sá fyrsti er sjálfgefinn hjá kerfinu; hinir verða valkostir sem þú getur skipt yfir í í hvaða reit vaktaskrárinnar sem er.", "Full-time hours and how evening/weekend/night hours convert to “normalized” hours for the balance math. The evening × is applied per hour, not per shift: only the hours from the cut-off onward earn it. Whatever the shift, only its hours past 17:00 are counted — so a short evening works out on its own, no special case needed. 16:00–22:00 = 1 plain + 5 × 1.05 = 6.25 · 16:00–21:00 = 1 plain + 4 × 1.05 = 5.20 · 14:00–22:00 = 3 plain + 5 × 1.05 = 8.25.": "Fullt starf í klst og hvernig kvöld-, helgar- og næturstundir breytast í „vegnar“ klst fyrir stöðuútreikninginn. Kvöldvægið reiknast á hverja klukkustund, ekki á vaktina í heild: aðeins stundirnar frá viðmiðinu og áfram fá það. Hver sem vaktin er, þá teljast aðeins stundir hennar eftir kl. 17:00 — því gengur stutt kvöldvakt upp af sjálfu sér, án sérreglu. 16:00–22:00 = 1 óvegin + 5 × 1,05 = 6,25 · 16:00–21:00 = 1 óvegin + 4 × 1,05 = 5,20 · 14:00–22:00 = 3 óvegnar + 5 × 1,05 = 8,25.", "Red days (Icelandic public holidays) — comma-separated dates, e.g. 2026-12-25, 2026-12-26. On these, every hour counts at the red-day × — day and evening alike, and the whole shift, not just the part after 17:00. Night shifts keep the night × instead.": "Rauðir dagar (íslenskir frídagar) — dagsetningar aðskildar með kommu, t.d. 2026-12-25, 2026-12-26. Á þeim telst hver klukkustund með rauða-daga væginu — bæði dagur og kvöld, og öll vaktin, ekki bara hlutinn eftir kl. 17:00. Næturvaktir halda næturvæginu í staðinn.", "No months closed yet. When a timetable is finished, press": "Enginn mánuður hefur verið lokaður enn. Þegar vaktaskrá er tilbúin, ýttu á", "on the Timetable tab — it files the month here and carries everyone's balance into the next one.": "á Vaktaskrá-flipanum — mánuðurinn geymist hér og staða allra flyst yfir í þann næsta.", "Close month & start next": "Loka mánuði og hefja næsta", "rota": "vaktaskrá", "Google Chrome": "Google Chrome", "Microsoft Edge": "Microsoft Edge", "or": "eða", "Close": "Loka", "and start the next month?": "og hefja næsta mánuð?", "Copy": "Afrita", "back into the editor?": "aftur í ritilinn?", "from the archive?": "úr skjalasafninu?", "Copy into editor": "Afrita í ritil", "Remove it": "Fjarlægja", "This keeps": "Þetta geymir", "as a record you can reprint at any time, then sets the tool up for the next month. Nothing is deleted, and Undo puts it back.": "sem skrá sem þú getur prentað út hvenær sem er, og stillir svo tólið fyrir næsta mánuð. Engu er eytt og Afturkalla setur það til baka.", "Balances carried forward": "Staða sem flyst áfram", "— each person's projected balance becomes their opening balance for next month:": "— áætluð staða hvers og eins verður staða hans í upphafi næsta mánaðar:", "New period becomes": "Nýtt tímabil verður", ". Staff, patterns, coefficients and the fortnight anchor all stay exactly as they are.": ". Starfsfólk, mynstur, vægi og upphafsdagur hálfsmánaðarins haldast öll óbreytt.", "This replaces the staff list, time off, coefficients": "Þetta kemur í stað starfsmannalistans, frísins, væganna", "and the period dates": "og dagsetninga tímabilsins", "currently in the editor with the ones saved for": "sem eru núna í ritlinum, með þeim sem eru vistuð fyrir", "The archived record itself is not touched, and Undo puts your current setup back.": "Skráin í skjalasafninu sjálf breytist ekki og Afturkalla setur núverandi uppsetningu til baka.", "This deletes the saved record of": "Þetta eyðir vistuðu skránni fyrir", "It does not change any balance or the current timetable. Undo puts it back.": "Það breytir engri stöðu né núverandi vaktaskrá. Afturkalla setur hana til baka.", "Closed": "Lokað", "balances carried, period moved on. Undo is available.": "staða flutt, tímabil fært áfram. Afturkalla er í boði.", "Copied": "Afritað", "into the editor.": "í ritilinn.", "Removed": "Fjarlægt", "from the archive.": "úr skjalasafninu.", "Set all balances to zero": "Núllstilla alla stöðu", "Set all balances to zero?": "Núllstilla alla stöðu?", "Set them to zero": "Núllstilla", "This sets the carried +/- balance of every person to 0, so the next month starts from a clean slate. Staff, patterns, time off and the timetable are not touched, and Undo puts the old numbers back.": "Þetta setur +/- stöðu allra í 0, svo næsti mánuður byrji með hreint borð. Starfsfólk, mynstur, frí og vaktaskráin haldast óbreytt, og Afturkalla setur gömlu tölurnar til baka.", "All balances set to zero.": "Öll staða núllstillt.", "All balances are already zero.": "Öll staða er þegar núll.", "Now": "Núna", "After": "Eftir", "A weekend is always both days — nobody is put on Saturday alone or Sunday alone": "Helgi er alltaf báðir dagarnir — enginn er settur einn á laugardag eða einn á sunnudag", "Saturday only, no Sunday": "aðeins laugardagur, enginn sunnudagur", "Sunday only, no Saturday": "aðeins sunnudagur, enginn laugardagur", "“Fortnight counts from” must be a Monday — moved to": "„Hálfsmánuður telst frá“ verður að vera mánudagur — fært á"};
+function lang(){return (C().lang==='is')?'is':'en';}
+function t(k){return (lang()==='is'&&I18N_IS[k]!==undefined)?I18N_IS[k]:k;}
+const _origText=new WeakMap();
+function translateDOM(){
+  const isIS=lang()==='is';
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(n){
+    const p=n.parentNode;if(!p)return NodeFilter.FILTER_REJECT;
+    const tag=p.nodeName;
+    if(tag==='SCRIPT'||tag==='STYLE'||tag==='TEXTAREA')return NodeFilter.FILTER_REJECT;
+    return (n.nodeValue&&n.nodeValue.trim())?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
+  const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  nodes.forEach(n=>{
+    if(!_origText.has(n))_origText.set(n,n.nodeValue);
+    const en=_origText.get(n),key=en.trim();
+    const v=isIS?I18N_IS[key]:undefined;
+    const out=(v!==undefined)?en.replace(key,v):en;
+    if(n.nodeValue!==out)n.nodeValue=out;
+  });
+  document.querySelectorAll('[title]').forEach(el=>{
+    if(el._tEn===undefined)el._tEn=el.getAttribute('title')||'';
+    const v=isIS?I18N_IS[el._tEn.trim()]:undefined;
+    el.setAttribute('title',v!==undefined?v:el._tEn);});
+}
+function applyLang(){
+  const isIS=lang()==='is';
+  DN=isIS?DN_IS:DN_EN; MN=isIS?MN_IS:MN_EN; ML=isIS?ML_IS:ML_EN;
+  document.documentElement.lang=isIS?'is':'en';
+  document.querySelectorAll('#langBtns .langb').forEach(b=>b.classList.toggle('on',b.dataset.l===lang()));
+  renderStaff();renderOff();fillOffDays();renderArchive();dateEcho();
+  if(DATES.length&&sched&&Object.keys(sched).length)render();
+  translateDOM();
+}
+function setLang(l){readInputs();C().lang=(l==='en')?'en':'is';
+  try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(_e){}
+  applyLang();}
+function msg(t){document.getElementById('saveMsg').textContent=t;setTimeout(()=>document.getElementById('saveMsg').textContent='',3000);}
+
+document.getElementById('tabs').addEventListener('click',e=>{if(!e.target.dataset.t)return;readInputs();try{localStorage.setItem('demo_rota_setup',JSON.stringify(D));}catch(_e){}document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));e.target.classList.add('on');document.getElementById('p-'+e.target.dataset.t).classList.add('on');if(e.target.dataset.t==='off')fillOffDays();if(e.target.dataset.t==='arch')renderArchive();});
+let saved=null;try{saved=localStorage.getItem('demo_rota_setup');}catch(_e){saved=null;}
+if(saved){try{D=JSON.parse(saved);}catch(e){if(BAKED)D=BAKED;}}else if(BAKED){D=BAKED;}
+migratePatterns();migrateRoles();migrateWknd();migratePrefs();migrateLegacySun();migrateOffDates();if(D.cfg&&!D.cfg.redDays)D.cfg.redDays=REDDAYS;
+fillInputs();applyLang();generate();
+// seed the very first state so the earliest edit can also be undone
+try{if(!localStorage.getItem('demo_rota_setup')){readInputs();localStorage.setItem('demo_rota_setup',JSON.stringify(D));}}catch(_e){}
+// --- Undo history: keeps recent states so an accidental delete can be reverted; persisted so it survives close+reopen ---
+let UNDO=[];try{UNDO=JSON.parse(localStorage.getItem('demo_rota_undo')||'[]');if(!Array.isArray(UNDO))UNDO=[];}catch(_e){UNDO=[];}
+function updateUndoBtn(){const b=document.getElementById('undoBtn');if(b){b.disabled=UNDO.length===0;b.style.opacity=UNDO.length?'1':'.45';b.title=UNDO.length?('Undo the last change ('+UNDO.length+' step'+(UNDO.length>1?'s':'')+' available)'):'Nothing to undo yet';}}
+function pushUndo(prevStr){if(!prevStr)return;if(UNDO.length&&UNDO[UNDO.length-1]===prevStr)return;UNDO.push(prevStr);if(UNDO.length>40)UNDO.shift();try{localStorage.setItem('demo_rota_undo',JSON.stringify(UNDO));}catch(_e){}updateUndoBtn();}
+function undoLast(){if(!UNDO.length){msg('Nothing to undo.');return;}const prev=UNDO.pop();try{localStorage.setItem('demo_rota_undo',JSON.stringify(UNDO));}catch(_e){}let PD;try{PD=JSON.parse(prev);}catch(e){msg('Could not undo that step.');updateUndoBtn();return;}D=PD;try{localStorage.setItem('demo_rota_setup',prev);}catch(_e){}fillInputs();generate();applyLang();updateUndoBtn();msg('Reverted the last change. Press Undo again to go back further.');}
+// --- Auto-save: persist every edit immediately, so nothing is lost even if you forget the Save button ---
+(function(){let t=null;function auto(){clearTimeout(t);t=setTimeout(()=>{try{const prev=localStorage.getItem('demo_rota_setup');readInputs();const now=JSON.stringify(D);if(prev!==now){pushUndo(prev);localStorage.setItem('demo_rota_setup',now);const b=document.getElementById('savedTag');if(b){b.textContent='✓ saved';b.style.opacity='1';clearTimeout(auto._h);auto._h=setTimeout(()=>{b.style.opacity='.45';},1500);}if(window.fsAuto)window.fsAuto();}}catch(_e){}},400);}document.addEventListener('input',auto,true);document.addEventListener('change',auto,true);})();
+updateUndoBtn();
+
+/* ============================================================================
+   SAVE TO A REAL FILE ON THIS COMPUTER
+   Chrome/Edge: pick a .json file once, then every edit writes into that file
+   silently. Safari/Firefox: falls back to an ordinary download.
+   The browser storage auto-save above keeps running either way, as a safety net.
+   ========================================================================== */
+const FS_OK = (typeof window.showSaveFilePicker === 'function');
+let FS_H = null;      // the linked FileSystemFileHandle
+let FS_NAME = '';     // its filename, for display
+
+function fsTag(txt, ok){
+  const e = document.getElementById('fileTag');
+  if(e){ e.textContent = txt; e.style.color = ok ? '#2e7d32' : '#8a6d3b'; }
+}
+function fsBanner(txt, kind){
+  const b = document.getElementById('fsBanner'), t = document.getElementById('fsBannerTxt');
+  if(!b || !t) return;
+  const S = { ok:['#e8f5e9','#c8e6c9','#1b5e20'], warn:['#fff8e1','#ffe0b2','#7a5100'], info:['#eef4fb','#cfe0f2','#1b3d63'] }[kind] || ['#f5f5f5','#e0e0e0','#333'];
+  b.style.background = S[0]; b.style.borderColor = S[1]; b.style.color = S[2];
+  t.innerHTML = txt; b.style.display = 'block';
+}
+
+/* Remember what this computer has actually PROVEN it can do, rather than what the
+   browser merely claims to support. 'untested' | 'works' | 'blocked' */
+function fsState(){ try{ return localStorage.getItem('demo_rota_fs_state') || 'untested'; }catch(_e){ return 'untested'; } }
+function fsSetState(s){ try{ localStorage.setItem('demo_rota_fs_state', s); }catch(_e){} }
+
+/* Handles can't go in localStorage, but IndexedDB can store them — so the link
+   to her file survives closing and reopening the page. */
+function fsDB(){ return new Promise((res,rej)=>{ const r = indexedDB.open('demo_rota_fs',1);
+  r.onupgradeneeded = ()=> r.result.createObjectStore('h');
+  r.onsuccess = ()=> res(r.result); r.onerror = ()=> rej(r.error); }); }
+async function fsPut(k,v){ try{ const db = await fsDB(); await new Promise((res,rej)=>{
+  const t = db.transaction('h','readwrite'); t.objectStore('h').put(v,k);
+  t.oncomplete = res; t.onerror = ()=> rej(t.error); }); }catch(_e){} }
+async function fsGet(k){ try{ const db = await fsDB(); return await new Promise(res=>{
+  const q = db.transaction('h','readonly').objectStore('h').get(k);
+  q.onsuccess = ()=> res(q.result); q.onerror = ()=> res(null); }); }catch(_e){ return null; } }
+
+async function fsPerm(ask){
+  if(!FS_H) return false;
+  if(!FS_H.queryPermission) return true;
+  try{
+    let p = await FS_H.queryPermission({mode:'readwrite'});
+    if(p !== 'granted' && ask) p = await FS_H.requestPermission({mode:'readwrite'});
+    return p === 'granted';
+  }catch(_e){ return false; }
+}
+
+async function fsWrite(){
+  if(!FS_H) return false;
+  try{
+    readInputs();
+    const w = await FS_H.createWritable();
+    await w.write(JSON.stringify(D,null,2));
+    await w.close();
+    fsTag('✓ saved to '+FS_NAME, true);
+    return true;
+  }catch(e){
+    fsTag('⚠ could not write to '+FS_NAME+' — press 💾 again', false);
+    return false;
+  }
+}
+
+function fsSuggestName(){
+  try{ const g = C(), d = new Date((g.countFrom || g.pStart)+'T00:00:00');
+    return 'vaktatafla_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'.json';
+  }catch(_e){ return 'vaktatafla.json'; }
+}
+
+/* The 💾 button: first press picks the file, later presses just write to it. */
+async function fileSave(){
+  readInputs();
+  if(FS_H){
+    if(await fsPerm(true)){ if(await fsWrite()) msg('Saved to '+FS_NAME+'.'); return; }
+    msg('Permission to write that file was refused — choosing a new file instead.');
+    FS_H = null;
+  }
+  if(FS_OK){
+    try{
+      FS_H = await window.showSaveFilePicker({
+        suggestedName: fsSuggestName(),
+        types:[{description:'Rota setup', accept:{'application/json':['.json']}}]
+      });
+      FS_NAME = FS_H.name;
+      await fsPut('handle', FS_H); await fsPut('name', FS_NAME);
+      if(await fsWrite()){
+        fsSetState('works');
+        fsBanner('✅ <b>Confirmed — this really works on this computer.</b> Your rota is now being kept in <b>'+FS_NAME+'</b>, and every change you make from now on saves straight into that file. No buttons needed.','ok');
+        msg('Linked to '+FS_NAME+'.');
+      }else{
+        fsBlocked('The file was chosen, but this computer would not let the page write to it.');
+      }
+      return;
+    }catch(e){
+      FS_H = null;
+      if(e && e.name === 'AbortError'){ msg('Save cancelled — nothing was lost.'); return; }
+      // SecurityError / NotAllowedError etc. = the computer's own policy refused
+      fsBlocked('This computer blocked the save window.');
+      return;
+    }
+  }
+  fsDownload();
+}
+
+/* The computer refused. Say so plainly — do NOT pretend a download worked. */
+function fsBlocked(what){
+  fsSetState('blocked');
+  fsTag('this computer blocks saving to a file', false);
+  fsBanner('⚠️ <b>'+what+'</b><br>Nothing has been lost — everything you type is still saved inside this browser, and it will all be here when you reopen this page on <i>this</i> computer. What you cannot do is keep it as a file or move it to another machine.<br><b>Tell whoever set up this tool that you saw this message.</b> You can also try the <b>Download HTML</b> button; if that is blocked too, we will move the rota to a shared sheet instead.','warn');
+  msg('This computer blocked saving to a file.');
+}
+
+/* Fallback for browsers without the file picker (Safari, Firefox) */
+function fsDownload(){
+  const nm = fsSuggestName();
+  try{
+    const b = new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+    const u = URL.createObjectURL(b), a = document.createElement('a');
+    a.href = u; a.download = nm; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u), 4000);
+    fsTag('tried to save a copy: '+nm, false);
+    fsBanner('📄 This browser can only save by <b>downloading</b>. Check your <b>Downloads</b> folder now for <b>'+nm+'</b>.<br>If it is not there, this computer blocked it — tell whoever set up this tool. Your work is still safe inside this browser either way.','warn');
+    msg('Tried to save '+nm+' to your Downloads folder — please check it arrived.');
+  }catch(_e){
+    fsBlocked('This computer will not let the page save a file at all.');
+  }
+}
+
+async function fileOpen(){
+  if(FS_OK && typeof window.showOpenFilePicker === 'function'){
+    try{
+      const [h] = await window.showOpenFilePicker({
+        types:[{description:'Rota setup', accept:{'application/json':['.json']}}]
+      });
+      const f = await h.getFile();
+      if(fsApply(await f.text())){
+        FS_H = h; FS_NAME = h.name;
+        await fsPut('handle', h); await fsPut('name', FS_NAME);
+        fsSetState('works');
+        fsTag('✓ saving to '+FS_NAME, true);
+        fsBanner('✅ Opened <b>'+FS_NAME+'</b>. Every change now saves straight back into that file.','ok');
+      }
+      return;
+    }catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  document.getElementById('fsPick').click();
+}
+function fileOpenFallback(ev){
+  const f = ev.target.files && ev.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{ if(fsApply(r.result)) fsTag('opened '+f.name+' (this browser cannot save back into it)', false); };
+  r.readAsText(f);
+  ev.target.value = '';
+}
+
+/* Load a setup object into the tool, with the current state pushed onto Undo first */
+function fsApply(txt){
+  let P;
+  try{ P = JSON.parse(txt); }catch(_e){ msg('That file is not a rota setup file.'); return false; }
+  if(!P || !Array.isArray(P.staff)){ msg('That file is not a rota setup file.'); return false; }
+  try{ pushUndo(localStorage.getItem('demo_rota_setup')); }catch(_e){}
+  D = P;
+  migratePatterns(); migrateRoles(); migrateWknd(); migratePrefs(); migrateLegacySun(); migrateOffDates();
+  if(D.cfg && !D.cfg.redDays) D.cfg.redDays = REDDAYS;
+  fillInputs(); generate();
+  try{ localStorage.setItem('demo_rota_setup', JSON.stringify(D)); }catch(_e){}
+  msg('Opened.');
+  return true;
+}
+
+/* Auto-save into the linked file, debounced. Never prompts — if the browser has
+   dropped the permission we just tell her to press 💾 once. */
+(function(){
+  let t = null;
+  window.fsAuto = function(){
+    if(!FS_H) return;
+    clearTimeout(t);
+    t = setTimeout(async ()=>{
+      if(await fsPerm(false)) await fsWrite();
+      else fsTag('📄 '+FS_NAME+' — press 💾 once to reconnect', false);
+    }, 1200);
+  };
+})();
+
+/* On load: say what this browser can do, and reconnect to the file if there is one */
+(async function(){
+  if(!FS_OK){
+    fsTag('this browser cannot save to a file', false);
+    fsBanner('⚠️ <b>This browser can\'t save your rota to a file on this computer.</b> Your work is kept inside this browser only — it will still be here when you reopen this page on this computer, but it can\'t be backed up or moved. For full saving, open this page in <b>Google Chrome</b> or <b>Microsoft Edge</b>.','warn');
+    return;
+  }
+  const h = await fsGet('handle');
+  if(!h){
+    if(fsState() === 'blocked'){
+      fsTag('this computer blocks saving to a file', false);
+      fsBanner('⚠️ <b>Last time, this computer blocked saving to a file.</b> Everything you type is still kept safely inside this browser on this computer — you just can\'t keep it as a file. You can press <b>💾 Save to my computer</b> to try again (things sometimes change), but if you saw this before, tell whoever set up this tool.','warn');
+    }else{
+      // Nothing proven yet — stay quiet. The status text next to the buttons is the nudge.
+      fsTag('no file linked yet — press 💾', false);
+    }
+    return;
+  }
+  FS_H = h; FS_NAME = (await fsGet('name')) || h.name || 'your rota file';
+  if(await fsPerm(false)) fsTag('✓ saving to '+FS_NAME, true);
+  else{
+    fsTag('📄 '+FS_NAME+' — press 💾 once to reconnect', false);
+    fsBanner('📄 This page is linked to <b>'+FS_NAME+'</b>. Press <b>💾 Save to my computer</b> once to let it write to that file again (browsers ask each time the page is reopened).','ok');
+  }
+})();
+(function(){const el=document.getElementById('ttGrid');if(!el)return;let down=false,sx=0,sl=0,moved=false;el.addEventListener('mousedown',e=>{down=true;moved=false;sx=e.pageX;sl=el.scrollLeft;});window.addEventListener('mouseup',()=>{down=false;el.classList.remove('drag');});el.addEventListener('mousemove',e=>{if(!down)return;const dx=e.pageX-sx;if(Math.abs(dx)>4){moved=true;el.classList.add('drag');}el.scrollLeft=sl-dx;});el.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();}},true);})();
+</script>
+
+
+</body></html>

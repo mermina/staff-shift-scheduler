@@ -1,37 +1,45 @@
-# Organisation shifts scheduler
+# Staff Shift Scheduler
 
-A self-contained, data-driven staff **shift scheduler** for care homes, hospitals, elderly homes, production lines — any organisation that runs on shifts. It builds a fortnightly/monthly rota automatically from a simple staff list and a set of coverage rules, then shows an hours-and-contract balance check for each person.
+Rota generators that run in the browser. You describe your staff, the cover you need and your rules, and the tool builds a month of shifts, checks it against the rules and shows each person's hours balance. Each demo is a single self-contained HTML file: no install, no server, no account.
 
-Everything runs in a single HTML file. No installation, no server, no accounts, no dependencies — just open it in a browser.
+**Live demos:** open `index.html`, or the GitHub Pages site for this repository.
 
-**🌐 Live demo:** [https://github.com/mermina/staff-shift-scheduler](https://mermina.github.io/staff-shift-scheduler/)
+| Demo | For | Folder |
+|---|---|---|
+| **Café & restaurant** (Bistró Dæmi) | cafés, restaurants, bars, 8–25 staff | [`hospitality/`](hospitality/) |
+| **Care home** (24/7) | care homes, residential units, any 24/7 shift work | [`care-home/`](care-home/) |
 
-> The live demo uses **fictional names and data** for illustration only.
+![Café-restaurant demo](docs/screenshots/hospitality.png)
 
-## What it does
+## Café & restaurant demo
 
-- **Auto-generates a rota** from each person's contract %, the shift types they can work, and coverage targets per shift and day.
-- **Respects real-world rules:** always a night person on, a supervisor each weekday, one early "opener", 11-hour rest between shifts, a cap on consecutive shifts, weekend cover, and rotating the opener.
-- **Keeps fixed patterns** for staff who always work the same days, and auto-schedules everyone else around them.
-- **Tracks the hours balance** (over / under contract) per person, with weighting coefficients for evening, weekend, night and public-holiday hours.
-- **Bilingual:** Icelandic and English, switchable with one button.
-- **Editable in the browser** — change staff, coverage, coefficients and rules, then regenerate. Changes auto-save locally.
+- **Monthly rota** built from each person's contract hours, availability, the shift types they can take, and the cover needed per shift, day and area (floor / kitchen).
+- **Rules the generator never breaks:** minimum rest between shifts (11 h), maximum days in a row (5), each person's weekly maximum, a key-holder on every opening and closing shift. These hold across the change of month too.
+- **Balancing:** after filling the rota, shifts are moved one at a time from whoever is over target to whoever is under, without breaking any rule. Salaried staff come first.
+- **Close the month:** files the month in an Archive (rota, staff, pay rates, hours and cost, frozen as they were) and carries each salaried person's hour balance into the next month. Undo included.
+- **Wage cost incl. employer on-costs**, and labour cost as a % of expected sales.
+- **Hour weights (vægi)** for evening, weekend and public holiday hours (1.00 = off). They count toward hours owed, not pay.
+- **My shifts:** one person's shifts in a phone-friendly list, copyable into a message.
+- Click any cell to change a shift; checks, hours and cost update straight away. Excel (CSV) export, print, Icelandic/English.
 
-## How to use it
+## Care-home demo
 
-1. Open the live demo link above, or download `index.html` and open it in any modern browser.
-2. Edit the **Staff**, **Time**, **Shifts & coverage** and **Rules** tabs.
-3. Click **Generate schedule**.
-4. Review the **Timetable** and the hours/contract check, and export to Excel if needed.
+![Care-home demo](docs/screenshots/care-home.png)
+
+- Day, evening and night shifts across a pay period running from the 11th to the 10th.
+- A night person every night, a supervisor each weekday, one 7:00 opener, 11-hour rest, a limit on days in a row, weekends kept in pairs.
+- Fixed patterns kept exactly; everyone else scheduled around them.
+- Weighted hours (evening, weekend, night, public holiday) and a balance per person.
+- Month archive with carry-forward, saving to a file on your computer (File System Access API, with a download fallback), Icelandic/English.
 
 ## Data & privacy
 
-- This repository holds **code only** — no real staff data. The demo uses **fictional placeholder names**.
-- Real staff information is personal data under GDPR and must live in a private, access-controlled place (e.g. a private sheet shared only with the manager) — **never** in this repo or on GitHub Pages.
-- Scope: **staff scheduling data only — no resident or patient data.**
-- Data you enter in the tool stays only in your own browser (local storage); nothing is uploaded anywhere.
+- Both demos use **fictional names, rates and figures** only.
+- The tools keep what you enter **in your own browser** (localStorage). Nothing is uploaded anywhere.
+- Real staff data is personal data under GDPR. Do not put it in this repository or on a public page.
+- Scope: staff scheduling data only, no resident, patient or customer data.
 
 ## Notes
 
-- Designed to be reusable: nothing is hard-coded to one workplace — it's all driven by the data you enter.
-- A companion Google Sheets version (same scheduling engine) exists for teams who prefer a shared sheet.
+- Pay rates in the café demo are placeholders, roughly in line with the 2026 Efling–SA hotel & restaurant wage table. Use your own agreement and ask your accountant for your on-cost percentage.
+- Built with AI assistance.
